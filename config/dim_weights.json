@@ -102,5 +102,26 @@
       "5": {"1_subproblem_completeness": 1.3, "4_visual_density": 1.2},
       "8": {"5_visual_engineering": 1.3}
     }
+  },
+
+  "huawei": {
+    "default": {
+      "_note": "华为杯题面发布前不预判题型。优先加权题意追踪、证据链和图表可读性。",
+      "2": {
+        "1_subproblem_decomposition": 1.3,
+        "3_math_skeleton_present": 1.2,
+        "5_subproblem_dependency_identified": 1.3
+      },
+      "5": {
+        "1_subproblem_completeness": 1.2,
+        "4_visual_density": 1.2
+      },
+      "8": {
+        "1_abstract_5_paragraph": 1.3,
+        "2_section_completeness": 1.2,
+        "3_formulas_figures_citations": 1.3,
+        "5_visual_consistency": 1.2
+      }
+    }
   }
 }

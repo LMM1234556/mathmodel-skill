@@ -8,6 +8,14 @@ The CUMCM electronic-paper template at `templates/latex/cumcm/main.tex` was inde
 
 The template is an assembly aid, not an official CUMCM template or an endorsement by the contest organizer. The current official rules always take precedence.
 
+## Huawei Cup review-template provenance
+
+`templates/latex/huawei/main.tex` was written for this repository as an internal
+review layout. It does not copy or redistribute the contest's official standard
+document. It is visibly marked as non-submission material and the renderer
+blocks formal compilation until the current-year official format is integrated
+and verified.
+
 ## Runtime dependencies
 
 Tools and libraries such as Python, Pandoc, TeX Live, MiKTeX, XeLaTeX, pdfLaTeX, CTeX, Fandol, and the Python packages listed in the requirements files are installed separately by the user. They are not vendored by this repository and remain subject to their own licenses.

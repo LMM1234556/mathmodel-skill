@@ -21,6 +21,11 @@ from unittest import mock
 import yaml
 
 
+# Child CLI tests explicitly decode UTF-8. Force the child interpreter to emit
+# UTF-8 on Windows as well as Linux/macOS.
+os.environ.setdefault("PYTHONUTF8", "1")
+
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -97,7 +102,7 @@ class PackageIntegrityTests(unittest.TestCase):
         self.assertEqual(stages, list(range(10)))
 
     def test_anti_pattern_counts_and_deferred_state(self) -> None:
-        expected = {"cumcm": 42, "mcm": 16, "diangong": 12}
+        expected = {"cumcm": 42, "mcm": 16, "diangong": 12, "huawei": 12}
         pattern = re.compile(r"^###\s+([A-Z]\d+)\.\s", re.MULTILINE)
 
         for competition, count in expected.items():
@@ -708,7 +713,7 @@ class ExtractDiffTests(unittest.TestCase):
 
 
 class DoctorTests(unittest.TestCase):
-    def test_all_three_competition_preflights_pass(self) -> None:
+    def test_all_competition_preflights_pass(self) -> None:
         for competition in doctor.COMPETITIONS:
             with self.subTest(competition=competition):
                 checks = doctor.run_checks(competition, check_tools=False)
@@ -731,7 +736,13 @@ class DoctorTests(unittest.TestCase):
         self.assertEqual(marker_check.status, "pass")
         self.assertEqual(marker_check.detail, "cumcm: 11/11 section markers")
 
-    def test_workspace_state_requires_v31_and_matching_competition(self) -> None:
+    def test_huawei_doctor_expects_internal_review_markers(self) -> None:
+        checks = doctor.run_checks("huawei", check_tools=False)
+        marker_check = next(item for item in checks if item.name == "render-markers")
+        self.assertEqual(marker_check.status, "pass")
+        self.assertEqual(marker_check.detail, "huawei: 10/10 section markers")
+
+    def test_workspace_state_requires_v32_and_matching_competition(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
             state_path = workspace / "state" / "decision_log.json"

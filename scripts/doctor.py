@@ -15,7 +15,7 @@ from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
-COMPETITIONS = ("cumcm", "mcm", "diangong")
+COMPETITIONS = ("cumcm", "mcm", "diangong", "huawei")
 COMPETITION_FILES = (
     "README.md",
     "winning_patterns.md",
@@ -28,11 +28,17 @@ COMPETITION_FILES = (
     "empirical.json",
     "current_rules.md",
 )
-RENDER_ENGINES = {"cumcm": "xelatex", "mcm": "pdflatex", "diangong": "xelatex"}
+RENDER_ENGINES = {
+    "cumcm": "xelatex",
+    "mcm": "pdflatex",
+    "diangong": "xelatex",
+    "huawei": "xelatex",
+}
 REQUIRED_TEX_FILES = {
     "cumcm": ("ctexart.cls",),
     "mcm": (),
     "diangong": ("ctexart.cls",),
+    "huawei": ("ctexart.cls",),
 }
 MODELING_MODULES = ("numpy", "scipy", "pandas", "matplotlib", "sklearn")
 CORE_SECTION_MARKERS = {
@@ -51,6 +57,7 @@ EXPECTED_RENDER_MARKERS = {
     "cumcm": CORE_SECTION_MARKERS | {"cumcm_no_ai_statement"},
     "mcm": CORE_SECTION_MARKERS | {"ai_use_report"},
     "diangong": CORE_SECTION_MARKERS,
+    "huawei": CORE_SECTION_MARKERS,
 }
 
 
@@ -129,14 +136,21 @@ def run_checks(
         ".codex-plugin/plugin.json",
         "config/dim_weights.json",
         "templates/shared/decision_log.json",
+        "templates/shared/problem_spec.md",
+        "templates/shared/plot_style.py",
+        "references/problem_understanding_protocol.md",
+        "references/visualization_protocol.md",
+        "references/paper_quality_protocol.md",
         "scripts/score_artifact.py",
         "scripts/extract_diff.py",
         "scripts/render_paper.py",
         "scripts/render_ai_usage.py",
+        "scripts/migrate_state.py",
         "templates/shared/ai_usage_ledger.json",
         "templates/latex/cumcm/main.tex",
         "templates/latex/mcm/main.tex",
         "templates/latex/diangong/main.tex",
+        "templates/latex/huawei/main.tex",
     )
     missing = [item for item in required_paths if not (SKILL_ROOT / item).is_file()]
     checks.append(_check(
@@ -183,20 +197,24 @@ def run_checks(
     decision = parsed.get(decision_path, {})
     decision_schema_ok = (
         isinstance(decision, dict)
-        and decision.get("_schema_version") == "3.1"
+        and decision.get("_schema_version") == "3.2"
         and isinstance(decision.get("stages"), dict)
         and isinstance(decision.get("scores"), dict)
         and isinstance(decision.get("iterations"), dict)
         and isinstance(decision.get("compliance"), dict)
         and isinstance(decision.get("compliance", {}).get("ruleset"), dict)
         and "ai_usage" in decision.get("compliance", {})
+        and isinstance(decision.get("stages", {}).get("2", {}).get("requirement_traceability"), list)
+        and "claim_evidence_matrix_path" in decision.get("stages", {}).get("8", {})
+        and "evidence_traceability_passed" in decision.get("stages", {}).get("9", {})
+        and "figure_audit_passed" in decision.get("stages", {}).get("9", {})
     )
     checks.append(_check(
         "decision-log-schema",
         decision_schema_ok,
-        "decision_log schema 3.1 with compliance state"
-        if decision_schema_ok else "decision_log template is not a complete v3.1 state",
-        "Restore the v3.1 decision-log template before using the workflow."
+        "decision_log schema 3.2 with traceability and compliance state"
+        if decision_schema_ok else "decision_log template is not a complete v3.2 state",
+        "Restore the v3.2 decision-log template before using the workflow."
         if not decision_schema_ok else None,
     ))
 
@@ -270,7 +288,7 @@ def run_checks(
             compliance = value.get("compliance") if isinstance(value, dict) else None
             valid = (
                 ok and isinstance(value, dict)
-                and value.get("_schema_version") == "3.1"
+                and value.get("_schema_version") == "3.2"
                 and value.get("competition") == competition
                 and isinstance(value.get("current_stage"), int)
                 and not isinstance(value.get("current_stage"), bool)
@@ -281,6 +299,10 @@ def run_checks(
                 and isinstance(compliance, dict)
                 and isinstance(compliance.get("ruleset"), dict)
                 and "ai_usage" in compliance
+                and isinstance(
+                    value.get("stages", {}).get("2", {}).get("requirement_traceability"),
+                    list,
+                )
             )
             checks.append(_check(
                 "workspace-state",

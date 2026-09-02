@@ -1,0 +1,52 @@
+{
+  "_doc": "华为杯内部质量 overlay。不是官方评分表；2026 论文规范和题面发布后必须复核。",
+  "_seed_version": "0.1",
+  "competition": "huawei",
+  "version": "0.1",
+  "stage_overrides": {
+    "8": {
+      "_note": "强调题意到交付物、论点到结果、图表到源文件的证据链",
+      "dims": {
+        "1_abstract_5_paragraph": {
+          "describe": "摘要覆盖实际任务、逐问方法、可追溯结果、验证和边界；键名为兼容共享评分，不要求五段"
+        },
+        "2_section_completeness": {
+          "describe": "全部 Requirement ID 和题目特定交付物均映射到正文或附件"
+        },
+        "3_formulas_figures_citations": {
+          "describe": "公式与实现一致；图表有 registry/sidecar；外部事实、方法和程序来源已核实并标注"
+        },
+        "4_language_quality": {
+          "describe": "事实、模型输出、假设和解释明确区分；段落职责清楚，无空泛创新"
+        },
+        "5_visual_consistency": {
+          "describe": "图表支持明确 Claim，单位、编码、字体、配色、精度统一并在最终尺寸可读"
+        }
+      }
+    },
+    "9": {
+      "dims": {
+        "1_anti_pattern_coverage": {
+          "describe": "对照 Huawei pack 的维护者检查项，并重新核对 2026 官方标准文档和 AI 规则"
+        },
+        "5_pdf_compile_clean": {
+          "describe": "最终 PDF 必须来自当届官方标准文档；内部 LaTeX 评阅稿不能作为提交件"
+        }
+      }
+    }
+  },
+  "panel_personas": [
+    {"id": "problem_reader", "label": "题意审计视角", "weight": 1.5, "focus": "限定词、范围、单位、交付物与 Requirement trace"},
+    {"id": "math_rigor", "label": "数学严谨视角", "weight": 1.2, "focus": "假设、公式、边界与验证"},
+    {"id": "implementation", "label": "实现复现视角", "weight": 1.1, "focus": "代码、数据、结果与基线一致"},
+    {"id": "communication", "label": "论文表达视角", "weight": 1.1, "focus": "Claim evidence、图表、段落与摘要"},
+    {"id": "judge_30s", "label": "评委快速阅读视角", "weight": 1.4, "focus": "任务、方法、量化答案、可信度与边界"}
+  ],
+  "anti_pattern_path": "competitions/huawei/anti_patterns.md",
+  "phrase_bank_path": "competitions/huawei/phrase_bank.md",
+  "winning_patterns_path": "competitions/huawei/winning_patterns.md",
+  "abstract_template_path": "competitions/huawei/abstract_template.md",
+  "paper_skeleton_path": "competitions/huawei/paper_skeleton.md",
+  "latex_template_dir": "templates/latex/huawei",
+  "citation_format": "以 2026 当届竞赛论文标准文档为准"
+}

@@ -7,6 +7,7 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -14,6 +15,9 @@ import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
+
+
+os.environ.setdefault("PYTHONUTF8", "1")
 
 
 ROOT = Path(__file__).resolve().parents[1]

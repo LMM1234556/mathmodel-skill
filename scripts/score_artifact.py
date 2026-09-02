@@ -1,5 +1,5 @@
 """
-score_artifact.py — L1 Critic 输出后的本地处理脚本 (v3.1 三竞赛版)
+score_artifact.py — L1 Critic 输出后的本地处理脚本 (v3.2 四竞赛版)
 
 功能:
 1. 读取 critique JSON
@@ -40,7 +40,7 @@ VALID_VERDICTS = {
 }
 
 VALID_VARIANTS = {"stage_level", "per_qi"}
-COMPETITIONS = {"cumcm", "mcm", "diangong"}
+COMPETITIONS = {"cumcm", "mcm", "diangong", "huawei"}
 
 # Baseline DIM_WHITELIST (cumcm-flavored; 其他竞赛通过 rubric_overlay.json dim_whitelist 覆盖)
 DIM_WHITELIST = {
@@ -753,7 +753,7 @@ def main():
     parser.add_argument("--decision-log", type=str, default=None,
                         help="覆盖路径解析协议; 默认 <cwd>/state/decision_log.json")
     parser.add_argument("--competition", choices=sorted(COMPETITIONS), default=None,
-                        help="cumcm | mcm | diangong (默认从 decision_log 读, 缺失则 cumcm)")
+                        help="cumcm | mcm | diangong | huawei (默认从 decision_log 读, 缺失则 cumcm)")
     parser.add_argument("--task-type", type=str, default=None,
                         help="题型 e.g. A_optimization (默认 default 全 1.0)")
     parser.add_argument("--mode", choices=["normal", "aggregate_qi"], default="normal",

@@ -12,6 +12,7 @@
 python scripts/doctor.py --competition cumcm --workspace /path/to/project
 python scripts/doctor.py --competition mcm --skip-tools --json
 python scripts/doctor.py --competition diangong --require-renderer --require-modeling
+python scripts/doctor.py --competition huawei --skip-tools
 ```
 
 ### `score_artifact.py` — L1 Critic 结果处理
@@ -58,9 +59,9 @@ python scripts/extract_diff.py \
 
 ### `render_paper.py` — Markdown 章节装配与 LaTeX 编译
 
-把 `paper_workspace/` 中的编号 Markdown 章节装入所选竞赛的 `main.tex`。三类模板统一使用显式 section marker；正式编译要求 Pandoc 和对应 LaTeX 引擎，并在必需的 `01`–`10` 章节缺失、为空，或 marker 缺失、重复、未知时停止。内置简化转换器只用于 `--no-compile` 结构预检。
+把 `paper_workspace/` 中的编号 Markdown 章节装入所选竞赛的 `main.tex`。模板统一使用显式 section marker；正式编译要求 Pandoc 和对应 LaTeX 引擎，并在必需的 `01`–`10` 章节缺失、为空，或 marker 缺失、重复、未知时停止。内置简化转换器只用于 `--no-compile` 结构预检。华为杯当前模板仅供内部评阅，脚本只允许 `--no-compile`，直到当届官方标准文档完成核对。
 
-正式渲染还会检查提交元数据：CUMCM 要求最终题目和关键词，MCM/ICM 要求控制号、题号、题目和关键词，电工杯要求报名序号、题号、题目和关键词。CLI 参数优先于 `decision_log.paper_metadata`；`XXXX`、`X`、`keyword1` 等占位值会阻断编译。只有显式组合 `--allow-placeholders --no-compile` 才会生成带醒目标记的结构预览。
+正式渲染还会检查提交元数据：CUMCM 要求最终题目和关键词，MCM/ICM 要求控制号、题号、题目和关键词，电工杯要求报名序号、题号、题目和关键词；华为杯内部评阅稿记录队号、题号、题目和关键词，但这些字段不能替代当届官方模板。CLI 参数优先于 `decision_log.paper_metadata`；`XXXX`、`X`、`keyword1` 等占位值会阻断编译。只有显式组合 `--allow-placeholders --no-compile` 才会生成带醒目标记的结构预览。
 
 CUMCM 模板按 2026 电子论文基线提供 A4、四边 2.5 cm、第一页摘要、无目录、正文最多 30 页和匿名字段最小化等 guard；它是仓库原创装配模板，不是官方模板，仍须在 Stage 0 与 Stage 9 重新核对当届通知。
 

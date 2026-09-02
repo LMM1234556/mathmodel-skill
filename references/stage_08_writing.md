@@ -6,12 +6,15 @@ inputs: ["decision_log.stages.0-7", "decision_log.competition", "decision_log.ta
 outputs:
   - "stage.8.{section_word_counts, figures_per_subproblem, tables_per_subproblem, abstract_drafts, ai_use_log, compliance}"
   - "paper_workspace/*.md"
+  - "paper_workspace/{claim_evidence_matrix.md,reverse_outline.md}"
   - "paper.tex"
 loads_reference:
   - "competitions/<competition>/current_rules.md"
   - "competitions/<competition>/winning_patterns.md"
   - "competitions/<competition>/phrase_bank.md"
   - "competitions/<competition>/empirical.json"
+  - "references/paper_quality_protocol.md"
+  - "references/visualization_protocol.md"
 loads_template:
   - "competitions/<competition>/paper_skeleton.md"
   - "competitions/<competition>/abstract_template.md"
@@ -23,6 +26,10 @@ next: stage_09_review
 # Stage 8 — Assemble the paper
 
 Turn the validated Stage 0–7 outputs into one coherent paper. Do not invent new results while writing. If the paper exposes a modeling contradiction, record it and trigger a targeted L2 backtrack.
+
+Before drafting prose, read `references/paper_quality_protocol.md` and build the
+claim-evidence matrix. Before inserting figures, read
+`references/visualization_protocol.md` and verify the figure registry.
 
 ## 1. Lock the current rules first
 
@@ -62,10 +69,15 @@ Create these files under `<cwd>/paper_workspace/`:
 | `09_references.md` | Verified references, including AI tools when required |
 | `10_appendix.md` | Essential code and supporting-material manifest |
 | `11_ai_use_report.md` | MCM only: Report on Use of AI after the main solution |
+| `claim_evidence_matrix.md` | Internal claim → source/result/validation traceability; not rendered by default |
+| `reverse_outline.md` | Internal paragraph jobs and Claim/Requirement IDs; not rendered by default |
 
 `01_abstract.md` contains abstract/summary content without a top-level heading because the template supplies its wrapper. Files `02`–`10` each own one clear top-level Markdown heading; the MCM/Diangong templates intentionally do not print duplicate body headings. `11_ai_use_report.md` also omits its top-level heading because the MCM template supplies it.
 
-Write the body first, then references and appendices, and write the abstract/summary last. Every number in the abstract must point to a result already present in the body.
+First create result cards and `claim_evidence_matrix.md`; then write the body,
+references, and appendices. Write the abstract/summary last from locked Claim
+IDs. Every number and comparative word in the abstract must point to a result
+already present in the body.
 
 ## 4. Keep one evidence chain
 
@@ -79,8 +91,13 @@ Before moving on, verify:
 - chosen models match Stage 3;
 - reported values match stored results rather than regenerated prose;
 - figures have readable labels, units, captions, and source paths;
+- every figure used by the paper has a `figure_registry.json` entry and was inspected at final PDF size;
 - claims and citations are verifiable;
 - limitations name a concrete failure mode and mitigation.
+
+After the first complete draft, build `reverse_outline.md` with one line per
+paragraph: paragraph location, its job, and Requirement/Claim IDs. Remove or
+repair paragraphs that have no identifiable job or evidence relationship.
 
 ## 5. Apply the competition branch
 
@@ -89,6 +106,7 @@ Before moving on, verify:
 | CUMCM | 2026 electronic paper: first page abstract, no commitment/numbering page, no TOC or identity; main text ≤30 pages; paper and support archive each ≤20 MB; AI disclosure and `AI工具使用详情.pdf` when AI is used | `xelatex` |
 | MCM/ICM | COMAP 2027: complete main solution ≤25 pages including summary, TOC, references, appendices and code; English, ≥12pt; `Report on Use of AI` follows outside the 25-page solution | `pdflatex` |
 | Diangong | Current official baseline: cover on page 1; title, abstract and keywords on page 2 with numbering starting at 1; body starts on page 3 with no TOC and is limited to 25 pages; appendices follow; A4 with 2.5 cm margins and Chinese body text in 小四; support ZIP/RAR ≤20 MB | `xelatex` |
+| Huawei Cup | The 2026 invitation fixes a 100-hour contest and requires the official standard document. The checked notice list does not yet provide the 2026 paper standard or AI rules; the repository LaTeX is internal-review only and final submission remains blocked until those files are verified | internal preview only |
 
 Problem-specific deliverables such as letters or memos also count toward the applicable page limit unless the current official problem states otherwise.
 
@@ -102,7 +120,7 @@ Because this skill itself uses an AI agent, keep `decision_log.compliance.ai_usa
 - what was adopted;
 - human changes and verification performed.
 
-Use `<skill>/scripts/render_ai_usage.py` in Stage 9 to generate the contest-specific disclosure artifact. Never place API keys, tokens, private data, or credentials in the ledger.
+Use `<skill>/scripts/render_ai_usage.py` in Stage 9 only for its supported CUMCM/MCM branches. It intentionally does not invent a Diangong or Huawei Cup disclosure format; for those contests, compare the ledger with the current official notice and record the manual check. Never place API keys, tokens, private data, or credentials in the ledger.
 
 ## 7. Render without detached sections
 
@@ -124,6 +142,9 @@ Use the five Stage 8 dimensions from `competitions/<competition>/rubric_overlay.
 ## Exit conditions
 
 - all required sections and problem-specific deliverables exist;
+- every source requirement maps to a paper section or explicit deliverable;
+- `claim_evidence_matrix.md` and `reverse_outline.md` exist and have no unresolved high-severity gap;
+- every inserted figure is registered, reproducible, truthful to its source data, and readable at final size;
 - the paper agrees with the Stage 0–7 decision log;
 - the current official rules were rechecked and recorded;
 - AI uses and citations are logged;

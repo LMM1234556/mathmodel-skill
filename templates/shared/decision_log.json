@@ -1,9 +1,9 @@
 {
-  "_schema_version": "3.1",
-  "_doc": "跨阶段决策日志。每个阶段开头读、结尾写。L2 回检读此文件寻找跨阶段冲突。schema 与 stage_NN.md 实际写入字段一一对齐。v3.1 加入规则核对、AI 使用台账与最终论文元数据。",
+  "_schema_version": "3.2",
+  "_doc": "跨阶段决策日志。每个阶段开头读、结尾写。L2 回检读此文件寻找跨阶段冲突。schema 与 stage_NN.md 实际写入字段一一对齐。v3.2 加入题意追踪、论点证据矩阵与图表审计状态。",
   "competition": "cumcm",
   "task_type": null,
-  "_competition_doc": "enum: cumcm | mcm | diangong (默认 cumcm 兼容老用户). 由 stage 0 kickoff 第一问填入。score_artifact.py / stage 文件按此字段 dispatch competitions/<comp>/* 加载。",
+  "_competition_doc": "enum: cumcm | mcm | diangong | huawei (默认 cumcm 兼容老用户). 由 stage 0 kickoff 第一问填入。score_artifact.py / stage 文件按此字段 dispatch competitions/<comp>/* 加载。",
   "_task_type_doc": "题型代码 (e.g. cumcm:A_optimization, mcm:A_continuous, diangong:A_engineering). 由 stage 1 选题后填入。score_artifact.py 用此字段查 config/dim_weights.json。null 时使用 default 全 1.0 权重 = 等价老逻辑。",
   "problem": null,
   "problem_meta": {
@@ -14,9 +14,10 @@
     "team_size": null
   },
   "paper_metadata": {
-    "_doc": "最终渲染元数据。CUMCM 要求 title/keywords；MCM 要求 mcm_control_number/problem/title/keywords；电工杯要求 diangong_registration_number/problem/title/keywords。CLI 显式参数可覆盖这些值。不得填写 XXXX、X、TITLE OF YOUR PAPER、keyword1、关键词1 等占位符。",
+    "_doc": "最终渲染元数据。CUMCM 要求 title/keywords；MCM 要求 mcm_control_number/problem/title/keywords；电工杯要求 diangong_registration_number/problem/title/keywords；华为杯内部评阅稿记录 huawei_team_number/problem/title/keywords，正式提交字段仍以当届标准文档为准。CLI 显式参数可覆盖这些值。不得填写 XXXX、X、TITLE OF YOUR PAPER、keyword1、关键词1 等占位符。",
     "mcm_control_number": null,
     "diangong_registration_number": null,
+    "huawei_team_number": null,
     "problem": null,
     "title": null,
     "keywords": []
@@ -75,6 +76,20 @@
     },
     "2": {
       "_label": "analysis",
+      "problem_source": {
+        "path": null,
+        "sha256": null,
+        "official_url": null,
+        "manifest_path": "state/problem_source_manifest.json"
+      },
+      "problem_spec_path": "state/problem_spec.md",
+      "requirement_traceability": [],
+      "interpretation_review": {
+        "path": "state/interpretation_review.md",
+        "conflicts_resolved": 0,
+        "blocking_conflicts": null
+      },
+      "ambiguities": [],
       "decomposition": [],
       "key_variables": [],
       "key_constraints": [],
@@ -117,6 +132,7 @@
           "code_path": "",
           "results_path": "",
           "figures": [],
+          "figure_registry_ids": [],
           "key_metrics": {},
           "physical_meaning_summary": "",
           "scores": {},
@@ -125,7 +141,8 @@
         }
       },
       "cross_reference_chain": {},
-      "assumption_change_history": []
+      "assumption_change_history": [],
+      "figure_registry_path": "figures/figure_registry.json"
     },
     "6": {
       "_label": "robustness",
@@ -151,6 +168,15 @@
       "figures_per_subproblem": {},
       "tables_per_subproblem": {},
       "abstract_drafts": [],
+      "claim_evidence_matrix_path": "paper_workspace/claim_evidence_matrix.md",
+      "reverse_outline_path": "paper_workspace/reverse_outline.md",
+      "figure_registry_path": "figures/figure_registry.json",
+      "paper_quality_checks": {
+        "requirements_mapped": false,
+        "claims_traced": false,
+        "figures_registered": false,
+        "reverse_outline_completed": false
+      },
       "anchor_phrase_hits": {},
       "danger_phrase_hits": [],
       "compliance": {
@@ -163,7 +189,7 @@
       "_label": "review",
       "anti_patterns_check": {
         "total": null,
-        "_total_doc": "由 active competition 的 anti_patterns.md 在 Stage 9 初始化，禁止将任一赛制的条目数硬编码为三赛制通用值。",
+        "_total_doc": "由 active competition 的 anti_patterns.md 在 Stage 9 初始化，禁止将任一赛制的条目数硬编码为跨赛制通用值。",
         "passed": 0,
         "fixed": 0,
         "deferred": 0,
@@ -185,6 +211,8 @@
         "ai_disclosure_passed": false,
         "supporting_materials_passed": false
       },
+      "evidence_traceability_passed": false,
+      "figure_audit_passed": false,
       "final_pdf_path": null,
       "submission_ready": false
     }

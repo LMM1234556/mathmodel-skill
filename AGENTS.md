@@ -12,7 +12,7 @@ This repository contains the `mathmodel-skill` product. When working inside this
 
 ## Maintenance rules
 
-- Preserve the trigger boundary: this skill is for CUMCM, MCM/ICM, and Diangong Cup contest work, not generic data analysis or ordinary paper review.
+- Preserve the trigger boundary: this skill is for CUMCM, MCM/ICM, Diangong Cup, and the Huawei Cup graduate modeling contest, not generic data analysis or ordinary paper review.
 - Treat official contest rules as time-sensitive. Keep a verification date and primary source in `competitions/<competition>/current_rules.md`; official current-year material always overrides repository guidance.
 - Treat empirical distributions and `winning_patterns.md` as observations or maintainer heuristics, never official thresholds or award predictors.
 - Keep user artifacts relative to the user's working directory (`state/`, `results/`, `figures/`, `paper_workspace/`, `paper_output/`). Resolve repository resources relative to the installed skill root.
@@ -26,11 +26,12 @@ This repository contains the `mathmodel-skill` product. When working inside this
 Run the checks proportionate to the change. Before a release, run all of them:
 
 ```bash
-python -m compileall -q scripts templates/shared/code_starter
+python -m compileall -q scripts templates/shared
 python -m unittest discover -s tests -p 'test_*.py' -v
 python scripts/doctor.py --competition cumcm --skip-tools
 python scripts/doctor.py --competition mcm --skip-tools
 python scripts/doctor.py --competition diangong --skip-tools
+python scripts/doctor.py --competition huawei --skip-tools
 git diff --check
 ```
 

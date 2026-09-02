@@ -1,0 +1,15 @@
+{
+  "_doc": "2026 题面尚未发布时的华为杯路由占位。题号、题型和子问数必须从当届试题 ZIP 提取；不得从往届规律预填。",
+  "_seed_version": "0.1",
+  "_verified_at": "2026-09-02",
+  "competition": "huawei",
+  "official_name": "中国研究生数学建模竞赛（华为杯）",
+  "duration_h": 100,
+  "team_size": 3,
+  "language": "zh-CN",
+  "compiler": "official-template-pending",
+  "default_subproblem_count": null,
+  "subproblem_count_iqr": null,
+  "topics": {},
+  "runtime_rule": "题面发布后按实际题号建立候选，task_type 未可靠识别时使用 default 权重。"
+}

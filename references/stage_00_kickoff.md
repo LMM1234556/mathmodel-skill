@@ -50,8 +50,8 @@ next: "stage_01_problem_selection | wait_for_prompt"
 
 收集以下 5 个启动字段。先合并当前用户消息与已有 state，**只询问尚缺字段**；不要为了凑满五问重复询问用户已经给出的竞赛、题号或 PDF 状态。将缺失项合并成一轮问答（Claude Code: 单条 AskUserQuestion；Codex: 编号列表，见 `references/harness_compat.md` §1）：
 
-1. **竞赛** — 选项: `1) cumcm 国赛  2) mcm 美赛  3) diangong 电工杯  4) 让我决定 (推荐 cumcm)`
-2. **题号** — 依竞赛动态生成选项 (cumcm A-E / mcm A-F / diangong A-B / `未公布`)
+1. **竞赛** — 选项: `1) cumcm 国赛  2) mcm 美赛  3) diangong 电工杯  4) huawei 华为杯研究生数模  5) 让我决定 (推荐按用户目标)`
+2. **题号** — 依当届题面和竞赛包动态生成；华为杯题面未发布前只提供 `未公布`，不得从往届预填
 3. **队员数与各人擅长** — 自由文本 (例: "3 人, 张建模, 李编程, 王写作")
 4. **截止时间** — 自由文本 (ISO 字符串或 "距现在 X 小时")
 5. **题目 PDF 路径** — 自由文本 ("未公布"亦可)
@@ -66,9 +66,9 @@ next: "stage_01_problem_selection | wait_for_prompt"
 先读取 `competitions/<comp>/current_rules.md`，再打开其中的官方来源复核当年规则；仓库内经验值不能覆盖官方通知。Stage 0 不预加载 `winning_patterns.md`：只有后续阶段需要某条经验模式、且能追溯其适用证据时才按需读取，避免把历史启发式误当成当年规则。
 
 **自动推断** (基于 competition 字段, 加载 `competitions/<comp>/README.md` 与 `topic_specs.json`):
-- 时长预算 (cumcm 72h / mcm 96h / diangong 72h)
-- 写作语言 (cumcm/diangong 中文 / mcm 英文)
-- LaTeX 编译器 (cumcm/diangong xelatex / mcm pdflatex)
+- 时长预算 (cumcm 72h / mcm 96h / diangong 72h / huawei 2026 为 100h)
+- 写作语言 (cumcm/diangong/huawei 中文 / mcm 英文)
+- 装配方式 (cumcm/diangong xelatex / mcm pdflatex / huawei 当届官方标准文档；仓库 xelatex 仅内部评阅)
 - 题号对应的 task-type 路由候选（仅在题号真实可用后确认）
 
 题面未公布或尚未读取时，`problem_scan.subproblem_count` 与 `stages.5.qi_count` 保持 `null`；不得用历史题目或 `topic_specs.json` 猜默认子问数。
@@ -129,6 +129,7 @@ cp <skill>/templates/shared/decision_log.json state/decision_log.json   # 仅当
 | cumcm | `<skill>/templates/latex/cumcm/main.tex` | xelatex | 91 份来源记录 / 59 份可提取样本观察 |
 | mcm | `<skill>/templates/latex/mcm/main.tex` | pdflatex | COMAP 2027 规则基线；经验统计 `n=0` |
 | diangong | `<skill>/templates/latex/diangong/main.tex` | xelatex | 官网 2026-03-21 页面基线；经验统计 `n=0` |
+| huawei | `<skill>/templates/latex/huawei/main.tex` | xelatex，仅内部评阅 | 2026 邀请函已核对；当届标准文档与 AI 规则待获取；经验统计 `n=0` |
 
 ### Step 4: 题目预扫 (题目公布后,15 min)
 

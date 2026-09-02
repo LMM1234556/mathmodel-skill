@@ -10,6 +10,9 @@ loads_reference:
   - "competitions/<comp>/anti_patterns.md"
   - "competitions/<comp>/rubric_overlay.json"
   - "references/feedback_layer3_panel.md"
+  - "references/problem_understanding_protocol.md"
+  - "references/paper_quality_protocol.md"
+  - "references/visualization_protocol.md"
 loads_template: ["templates/latex/<comp>/"]
 feedback: ["L1", "L3_panel", "red_team_in_championship"]
 next: SUBMIT
@@ -53,6 +56,20 @@ Minimum branches:
 - citations appear in the text and references follow citation order;
 - the currently checked official pages do not define a dedicated AI-disclosure format, so recheck the annual notice and preserve the ledger rather than inventing one.
 
+### Huawei Cup / 中国研究生数学建模竞赛
+
+- use the 2026 standard document downloaded from the official contest system,
+  not `templates/latex/huawei/main.tex`;
+- verify the problem ZIP and final PDF with the official MD5 tool, and preserve
+  which exact PDF was locked;
+- obey the separate MD5 submission and PDF upload windows in
+  `competitions/huawei/current_rules.md`;
+- verify team number/anonymity, page/layout, file/support-material, citation,
+  similarity, and AI-use requirements from the 2026 opening notice and files;
+- do not import page limits, covers, or AI declarations from CUMCM or Diangong;
+- if the 2026 paper standard or AI rules have not been obtained and recorded,
+  keep `submission_ready=false` and yield `block`.
+
 Any unresolved rule violation sets `submission_ready=false` and yields `block`.
 
 ## 2. Run the active anti-pattern checklist
@@ -72,6 +89,12 @@ Cross-check the final paper against `decision_log.json` and the saved artifacts:
 - every external claim has a verified source;
 - AI-generated citations have been opened and checked manually.
 
+Run a reverse trace from `state/problem_spec.md`: every source requirement must
+land in a final answer, table, figure, recommendation, or problem-specific
+deliverable. Then trace every abstract Claim ID back to a stored result and
+validation record. A polished paragraph does not pass when its evidence chain is
+missing.
+
 ## 4. Review presentation
 
 - labels, units, legends, equations, and captions remain readable at final PDF size;
@@ -79,6 +102,11 @@ Cross-check the final paper against `decision_log.json` and the saved artifacts:
 - tables use consistent units and precision;
 - there are no unresolved `??` references, missing glyphs, clipped figures, or large overfull boxes;
 - all required sections are present in the compiled PDF, not merely on disk as detached `.tex` files.
+
+Compare every inserted figure with `figures/figure_registry.json` and its
+`.figure.json` sidecar. Re-open the underlying result file for headline figures.
+Inspect at final physical size and record failures; do not approve charts from a
+notebook thumbnail or source code alone.
 
 ## 5. Run the five-view panel
 
@@ -98,7 +126,7 @@ python <skill>/scripts/render_ai_usage.py \
   --support-dir support_materials/
 ```
 
-For CUMCM with AI use, verify `support_materials/AI工具使用详情.pdf` is in the supporting archive and that inline marks and AI-tool references are present. For an explicit empty CUMCM ledger, the helper instead creates `paper_workspace/AI工具未使用声明.md`; rerender and verify that the declaration appears immediately after the references, with no details PDF. For MCM, verify `paper_workspace/11_ai_use_report.md` is rendered once, after the 25-page main solution. The helper intentionally does not invent a Diangong disclosure format; for Diangong, compare the ledger with the current official notice and record that manual check.
+For CUMCM with AI use, verify `support_materials/AI工具使用详情.pdf` is in the supporting archive and that inline marks and AI-tool references are present. For an explicit empty CUMCM ledger, the helper instead creates `paper_workspace/AI工具未使用声明.md`; rerender and verify that the declaration appears immediately after the references, with no details PDF. For MCM, verify `paper_workspace/11_ai_use_report.md` is rendered once, after the 25-page main solution. The helper intentionally does not invent a Diangong or Huawei Cup disclosure format; compare the ledger with the current official notice and record that manual check.
 
 ## 7. Compile and inspect the final PDF
 
@@ -122,6 +150,8 @@ Write actual runtime-derived counts and paths. The schema is:
     "page_limit_passed": null,
     "ai_disclosure_passed": null
   },
+  "evidence_traceability_passed": null,
+  "figure_audit_passed": null,
   "final_pdf_path": "paper_output/paper.pdf",
   "submission_ready": null
 }
@@ -133,6 +163,8 @@ The `null` values above are schema placeholders only. Replace every one with an 
 
 - current official rules verified with no unresolved violation;
 - anti-pattern and consistency checks completed;
+- requirement-to-deliverable and claim-to-evidence reverse traces passed;
+- every paper figure passed source, unit, encoding, caption, and final-size review;
 - all high-severity panel findings resolved;
 - PDF compiled and visually inspected;
 - AI disclosure and supporting materials complete when required;

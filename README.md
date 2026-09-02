@@ -1,11 +1,11 @@
 # mathmodel-skill
 
-> A structured Agent workflow for CUMCM, MCM/ICM, and Diangong Cup — designed to keep a 72–96 hour modeling project coherent from the first decision to the final submission.
+> A structured Agent workflow for CUMCM, MCM/ICM, Diangong Cup, and the Huawei Cup graduate modeling contest — designed to keep a 72–100 hour project coherent from the first decision to the final submission.
 
-[![Version](https://img.shields.io/badge/version-v6.1.0-6f42c1)](./.codex-plugin/plugin.json)
+[![Version](https://img.shields.io/badge/version-v6.2.0-6f42c1)](./.codex-plugin/plugin.json)
 [![CI](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](./scripts/doctor.py)
-[![Competitions](https://img.shields.io/badge/CUMCM%20%7C%20MCM%2FICM%20%7C%20Diangong-workflow-f97316)](./competitions/)
+[![Competitions](https://img.shields.io/badge/CUMCM%20%7C%20MCM%2FICM%20%7C%20Diangong%20%7C%20Huawei-workflow-f97316)](./competitions/)
 [![License](https://img.shields.io/badge/license-MIT-22c55e)](./LICENSE)
 
 数学建模比赛很少因为“缺少一个更聪明的回答”而失败。
@@ -98,10 +98,13 @@ flowchart LR
 | 对话越来越长，早期决定难以追溯               | 所有阶段共用 `state/decision_log.json`，统一保存选择、依据、评分与回退记录 |
 | 总体表现尚可，但某个关键维度明显不足         | Verdict 同时检查最低分和加权均分；高严重度问题不能被平均数掩盖 |
 | 只有 Q2 需要返工，却牵连全部结果             | Stage 5 按 Qi 保存状态，支持 `refine_partial`，只修改受影响的子问 |
-| 三类竞赛要求不同，维护成本不断增加           | 保留一条主流程，通过 competition pack、权重 overlay 和模板表达差异 |
+| 不同竞赛要求不同，维护成本不断增加           | 保留一条主流程，通过 competition pack、权重 overlay 和模板表达差异 |
 | Markdown 章节已经生成，但主 TeX 没有正确引用 | 模板使用显式 section marker；缺失、重复或未知 marker 会直接失败 |
 | 封面或摘要仍含占位符，却被误当作正式稿       | 正式渲染采用 fail-closed 检查；占位符只能用于显式 dry-run    |
 | 临近提交才发现页数、匿名或 AI 披露问题       | Stage 0、8、9 会重新打开规则入口；未通过合规门不能进入 `submission_ready` |
+| 题目复述流畅，但漏掉限定词、单位或交付物     | Stage 2 保存原文锚点和 SHA-256，独立复读后逐条消解冲突；高影响歧义直接阻断 |
+| 图表像默认软件输出，或好看但不能支持结论     | 每张图绑定 Claim、源结果、生成脚本和 caption；统一样式并在最终尺寸审查 |
+| 论文像模型说明书，摘要数字又找不到正文依据   | 先建 Claim—Evidence 矩阵和结果卡，再写正文；Stage 9 从摘要反查到结果文件 |
 | Pandoc、TeX 或依赖问题直到最后才暴露         | `doctor.py` 集中检查结构、竞赛包、Python、Pandoc、TeX 与可选依赖 |
 
 ## 设计原则
@@ -148,9 +151,9 @@ Codex 与 Claude Code 可以在同一工作区中读取相同的 state schema。
 
 根目录 `SKILL.md` 只承担调度职责。阶段细则、rubric、竞赛规则和模板按需加载，避免无关内容占用上下文。
 
-### 一条流程服务三类竞赛
+### 一条流程服务四类竞赛
 
-CUMCM、MCM/ICM 与电工杯不会被维护为三套互相漂移的工作流。它们的差异被限制在：
+CUMCM、MCM/ICM、电工杯与华为杯不会被维护为四套互相漂移的工作流。它们的差异被限制在：
 
 - `competitions/<comp>/`
 - 题型与阶段权重
@@ -169,7 +172,7 @@ Stage 5 保存每个 Qi 的分数、权重和状态。某个子问失败时，�
 
 CUMCM 分位描述的是公开样本中的观察位置，不是官方评分线，也不能用于推导获奖概率。
 
-MCM/ICM 与电工杯的经验层明确记录为 `n=0`，不会生成缺乏数据支持的“经验分位”。
+MCM/ICM、电工杯与华为杯的经验层明确记录为 `n=0`，不会生成缺乏数据支持的“经验分位”。
 
 ### 规则记录日期，但不假装永久有效
 
@@ -221,14 +224,16 @@ YAML/JSON、竞赛包、反模式计数、评分边界、模板 marker、渲染 
 | **CUMCM 国赛**   | 中文；XeLaTeX / 原创 `ctexart` 电子论文模板 | 收集 91 份公开论文源样本，其中 59 份成功提取文本并进入统计；42 项维护者反模式检查 | 当前材料最完整；观察分位不是官方门槛，规则以当届通知为准    |
 | **MCM/ICM 美赛** | English；pdfLaTeX / `article`               | 16 项维护者检查；已记录 COMAP 2027 页数、字号与 AI 披露基线  | 经验层 `n=0`，不提供论文分位；提交前必须重新核对 COMAP 要求 |
 | **电工杯**       | 中文；XeLaTeX / `ctexart`                   | 12 项工程导向检查；已记录官网页序、25 页正文、支撑材料与匿名基线 | 经验层 `n=0`；当前官网未提供专门 AI 格式，仍需检查当届通知  |
+| **华为杯研究生数模** | 中文；2026 官方标准文档待发布/获取          | 已核对 100 小时赛程、MD5 与 PDF 分段提交；12 项内部反模式检查 | 经验层 `n=0`；仓库 LaTeX 仅内部评阅，不能作为提交件 |
 
-截至 2026-07-22，仓库已核对：
+截至 2026-09-02，仓库已核对：
 
 - [CUMCM 2026 竞赛规则](https://www.mcm.edu.cn/html_cn/node/9d8e511fe7a1447b35f53a82c908e2e0.html)
 - [CUMCM 2026 论文格式规范](https://www.mcm.edu.cn/html_cn/node/4cd596519c9eb9fbd866398f6df0caa3.html)
 - [COMAP 2027 Instructions](https://www.contest.comap.com/undergraduate/contests/mcm/instructions.php)
 - [电工杯参赛规则](https://shumo.neepu.edu.cn/jszz/csgz.htm)
 - [电工杯论文规范](https://shumo.neepu.edu.cn/jszz/lwgf.htm)
+- [2026 华为杯中国研究生数学建模竞赛参赛邀请函](https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c9080189dcfa24e019dddacc24a1314?page=0)
 
 这些链接构成仓库当前的规则基线，但不能替代参赛当年的官方文件。
 
@@ -318,16 +323,19 @@ python -m pip install -r \
 
 - CUMCM 与电工杯使用 XeLaTeX
 - MCM/ICM 使用 pdfLaTeX
+- 华为杯当前只允许用 XeLaTeX 生成内部评阅稿；正式件等待 2026 官方标准文档
 
 ## 工作区产物
 
 ```text
 my-modeling-project/
 ├── state/
-│   └── decision_log.json       # 决策、评分、回退、规则与 AI 使用台账
+│   ├── decision_log.json       # 决策、评分、回退、规则与 AI 使用台账
+│   ├── problem_spec.md         # 原文锚点、原子要求、歧义与数学对象映射
+│   └── interpretation_review.md # 独立复读与冲突消解
 ├── results/                    # 结构化结果与可复现实验输出
-├── figures/                    # 最终图表
-├── paper_workspace/            # 01_abstract.md … 10_appendix.md，以及按需披露片段
+├── figures/                    # 最终图表、sidecar 与 figure_registry.json
+├── paper_workspace/            # 论点证据矩阵、反向提纲、正文分节与披露片段
 ├── paper_output/               # TeX 中间文件与最终 PDF
 └── support_materials/          # 代码、数据清单与竞赛要求的披露材料
 ```
@@ -341,8 +349,9 @@ Codex 与 Claude Code 可以在同一目录中接力。`decision_log.json` 负�
 | `scripts/doctor.py`          | 检查 skill 结构、竞赛包、环境与工作区                 | `python <skill>/scripts/doctor.py --competition mcm`         |
 | `scripts/score_artifact.py`  | 校验 critic JSON、重算加权分数与 verdict、聚合 per-Qi | `python <skill>/scripts/score_artifact.py ...`               |
 | `scripts/extract_diff.py`    | 生成并应用 section-level patch                        | `python <skill>/scripts/extract_diff.py --apply ...`         |
-| `scripts/render_paper.py`    | 将标准 Markdown 工作区装配为三类竞赛的 TeX/PDF        | `python <skill>/scripts/render_paper.py --competition cumcm --workspace paper_workspace` |
+| `scripts/render_paper.py`    | 将标准 Markdown 工作区装配为对应竞赛的 TeX/PDF        | `python <skill>/scripts/render_paper.py --competition cumcm --workspace paper_workspace` |
 | `scripts/render_ai_usage.py` | 根据台账生成 CUMCM/MCM AI 使用披露材料                | `python <skill>/scripts/render_ai_usage.py --competition mcm ...` |
+| `scripts/migrate_state.py`   | 将 v3.1 状态补齐到 v3.2，并先保存原文件备份            | `python <skill>/scripts/migrate_state.py state/decision_log.json` |
 | `scripts/ingest_papers.py`   | 供维护者离线更新经验统计                              | 见 [`scripts/README.md`](./scripts/README.md)                |
 
 完整 CLI 参数与依赖边界见 [`scripts/README.md`](./scripts/README.md)。
@@ -359,24 +368,39 @@ competitions/
   cumcm/                         # 规则、59 份样本统计、写作启发、评分覆盖与模板骨架
   mcm/                           # COMAP 规则基线；经验统计 n=0
   diangong/                      # 官网规则基线；经验统计 n=0
+  huawei/                        # 2026 邀请函基线；格式/AI 规则待发布；经验统计 n=0
 references/
   stage_00_* ... stage_09_*      # 按阶段加载的执行细则
   feedback_layer1_* ... layer4_* # 阶段评分、回检、Panel 与校准
   model_catalog.md               # 模型候选目录
+  problem_understanding_protocol.md # 题面原文追踪与独立复读
+  visualization_protocol.md      # 图表选择、证据登记与最终尺寸质检
+  paper_quality_protocol.md       # Claim—Evidence 写作与反向审计
 templates/
-  latex/{cumcm,mcm,diangong}/    # 三类竞赛 LaTeX 模板
+  latex/{cumcm,mcm,diangong,huawei}/ # LaTeX 装配模板；huawei 仅内部评阅
   shared/                        # 状态、AI 台账、表格与 Python 起步代码
 config/dim_weights.json          # 竞赛 × 题型 × 阶段的评分权重
 scripts/                         # 环境检查、评分、差分、装配、披露与维护工具
 tests/                           # 回归测试与 fixture
 ```
 
+## v6.2
+
+v6.2 针对三类常见失败做结构性补强：误读题目、论文证据链松散、图表缺乏信息设计。
+
+- Stage 2 不再只做“三遍精读”。题面版本、SHA-256、原文锚点、限定词、单位、附件字段和交付物进入 `problem_spec.md`；第二次独立复读必须记录冲突，高影响歧义不允许靠默认假设放行。
+- Stage 5 为图表增加 `figure_registry.json` 与 `.figure.json` sidecar。共享 `plot_style.py` 提供色盲友好配色、字体回退、300 dpi/vector 导出和结构警告，但不把视觉规范误当成科学正确性。
+- Stage 8 先写结果卡和 `claim_evidence_matrix.md`，再写正文；摘要只能使用已锁定 Claim ID。完成全文后以 `reverse_outline.md` 检查每段职责和证据关系。
+- Stage 9 新增两条反向链路：题面 Requirement → 最终交付物，以及摘要 Claim → 正文/结果/验证；图表必须回到源结果并在最终 PDF 尺寸复核。
+- `decision_log.json` 升级为 v3.2，并增加相应回归测试和 doctor 检查。
+- 已有 v3.1 项目可用 `migrate_state.py` 合并新字段；脚本先生成备份，保留旧值与未知扩展字段。
+
 ## v6.1
 
 v6.1 主要补强了环境预检、论文装配、评分一致性、AI 使用披露和数值示例的可靠性。
 
 - 新增 `doctor.py`，统一检查包结构、竞赛包、反模式计数、模板 marker 和工具链状态。
-- 三类竞赛生成的 section 会自动接入 `main.tex`。缺失章节、空章节、未知 marker 或重复 marker 都会明确失败，正式编译不会静默降级。
+- 各竞赛生成的 section 会自动接入 `main.tex`。缺失章节、空章节、未知 marker 或重复 marker 都会明确失败，正式编译不会静默降级。
 - CUMCM 改用仓库原创、MIT 授权的 `ctexart` 电子论文模板。模板不包含身份字段，并对摘要页、正文页数和最终提交元数据执行 fail-closed 检查。
 - 评分器改为由脚本重新计算 verdict，同时校验 stage、iteration、最低分、均分和题型权重，修复旧 verdict 被错误持久化的问题。
 - `extract_diff.py --apply` 不再要求与应用差分无关的 critique 输入。
@@ -396,18 +420,19 @@ mathmodel-skill 是协作与质量控制工具，不是自动获奖系统。
 
 - CUMCM 统计来自公开样本中成功提取文本的 59 份论文，可能受到年份、题型、来源和 PDF 可提取性的影响。
 - `winning_patterns.md`、经验分位和反模式清单属于维护者总结，不是官方 rubric。
-- MCM/ICM 与电工杯的经验统计目前均为 `n=0`，相关写作模式只能作为启发，不能解释为实测获奖规律。
+- MCM/ICM、电工杯与华为杯的经验统计目前均为 `n=0`，相关写作模式只能作为启发，不能解释为实测获奖规律。
 - 竞赛规则会变化。仓库保存的是最近一次核对的基线，正式提交前必须以当届官方通知和题目要求为准。
 - AI 生成的公式、代码、事实和引用必须由团队复核。台账和披露生成器帮助完整记录，但不代替合规判断。
 
 ## 开发与验证
 
 ```bash
-python -m compileall -q scripts templates/shared/code_starter
+python -m compileall -q scripts templates/shared
 python -m unittest discover -s tests -p 'test_*.py' -v
 python scripts/doctor.py --competition cumcm --skip-tools
 python scripts/doctor.py --competition mcm --skip-tools
 python scripts/doctor.py --competition diangong --skip-tools
+python scripts/doctor.py --competition huawei --skip-tools
 ```
 
 当工作流、模板或竞赛包发生变化时，请同步更新测试、版本号和规则核对日期。
@@ -416,7 +441,7 @@ python scripts/doctor.py --competition diangong --skip-tools
 
 ## License
 
-仓库原创代码、文档以及三类竞赛装配模板采用 [MIT License](./LICENSE)。运行时依赖和外部资料链接仍遵循各自的许可条款，详细边界见 [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)。
+仓库原创代码、文档以及竞赛装配模板采用 [MIT License](./LICENSE)。运行时依赖和外部资料链接仍遵循各自的许可条款，详细边界见 [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md)。
 
 ---
 

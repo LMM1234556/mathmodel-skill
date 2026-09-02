@@ -1,5 +1,5 @@
 """
-render_paper.py — markdown 中间产物 → 最终 PDF (v3.1 三竞赛版)
+render_paper.py — markdown 中间产物 → 最终 PDF (v3.2 四竞赛版)
 
 功能:
 1. 读 stage 8 各节 markdown 产出 (<cwd>/paper_workspace/)
@@ -7,6 +7,7 @@ render_paper.py — markdown 中间产物 → 最终 PDF (v3.1 三竞赛版)
    - cumcm:    templates/latex/cumcm/main.tex      + xelatex
    - mcm:      templates/latex/mcm/main.tex        + pdflatex
    - diangong: templates/latex/diangong/main.tex   + xelatex (中文)
+   - huawei:   templates/latex/huawei/main.tex     + xelatex (仅内部评阅稿)
 3. md → tex (正式编译使用 Pandoc；手工正则只供 structural dry-run)
 4. 三编生成 PDF
 
@@ -50,6 +51,14 @@ TEMPLATE_MAP = {
         "main_filename": "main.tex",
         "mode": "main_template",
         "_doc": "diangong 同 mcm 模式, 用 ctex 中文",
+    },
+    "huawei": {
+        "template_dir": _SKILL_ROOT / "templates" / "latex" / "huawei",
+        "engine": "xelatex",
+        "main_filename": "main.tex",
+        "mode": "main_template",
+        "preview_only": True,
+        "_doc": "huawei 模板只生成内部评阅稿；当届官方标准文档发布并核对前禁止作为提交件",
     },
 }
 
@@ -98,11 +107,18 @@ PAPER_FIELD_TOKENS = {
         "title": "MATHMODEL_DIANGONG_TITLE",
         "keywords": "MATHMODEL_DIANGONG_KEYWORDS",
     },
+    "huawei": {
+        "huawei_team_number": "MATHMODEL_HUAWEI_TEAM_NUMBER",
+        "problem": "MATHMODEL_HUAWEI_PROBLEM",
+        "title": "MATHMODEL_HUAWEI_TITLE",
+        "keywords": "MATHMODEL_HUAWEI_KEYWORDS",
+    },
 }
 
 PAPER_FIELD_LABELS = {
     "mcm_control_number": "MCM control number",
     "diangong_registration_number": "电工杯报名序号",
+    "huawei_team_number": "华为杯参赛队号",
     "problem": "problem/题号",
     "title": "title/论文题目",
     "keywords": "keywords/关键词",
@@ -196,6 +212,7 @@ def resolve_paper_metadata(decision_log: dict = None, overrides: dict = None) ->
         "diangong_registration_number": choose(
             "diangong_registration_number"
         ),
+        "huawei_team_number": choose("huawei_team_number"),
         "problem": choose(
             "problem", problem_meta.get("letter"), decision_log.get("problem")
         ),
@@ -304,7 +321,7 @@ def prepare_paper_metadata(
     if issues and not allow_placeholders:
         source_hint = (
             "请填写 state/decision_log.json 的 paper_metadata，或使用 "
-            "--control-number/--registration-number、--problem、--title、--keywords。"
+            "--control-number/--registration-number/--huawei-team-number、--problem、--title、--keywords。"
         )
         raise ValueError(
             f"{competition} 正式渲染已停止：" + "；".join(issues) + "。" + source_hint
@@ -514,7 +531,7 @@ def validate_workspace_sections(workspace: Path) -> None:
 
 
 # ============================================================================
-# 模板填充: 三竞赛统一 marker 装配
+# 模板填充: 四竞赛统一 marker 装配
 # ============================================================================
 
 
@@ -665,11 +682,16 @@ def fill_template(
 
 def compile_pdf(tex_path: Path, engine: str = "xelatex", runs: int = 3) -> bool:
     try:
-        unresolved = find_unresolved_front_matter_placeholders(
-            tex_path.read_text(encoding="utf-8")
-        )
+        tex_text = tex_path.read_text(encoding="utf-8")
+        unresolved = find_unresolved_front_matter_placeholders(tex_text)
     except OSError as exc:
         print(f"[FAIL] 无法读取待编译 TeX: {exc}")
+        return False
+    if "INTERNAL REVIEW TEMPLATE ONLY" in tex_text:
+        print(
+            "[FAIL] 当前 TeX 是华为杯内部评阅模板，不是当届官方提交文档；"
+            "已阻止正式编译。"
+        )
         return False
     if unresolved:
         print(
@@ -708,7 +730,7 @@ def main():
     parser.add_argument("--workspace", type=str, required=True,
                         help="<cwd>/paper_workspace/ 目录, 含 01..10_*.md 节文件")
     parser.add_argument("--competition", type=str, default=None,
-                        help="cumcm | mcm | diangong (默认从 decision_log 读, 缺失则 cumcm)")
+                        help="cumcm | mcm | diangong | huawei (默认从 decision_log 读, 缺失则 cumcm)")
     parser.add_argument("--decision-log", type=str, default=None,
                         help="可选: 指定 decision_log.json 路径用于自动检测 competition")
     parser.add_argument("--control-number", "--mcm-control-number",
@@ -717,6 +739,8 @@ def main():
     parser.add_argument("--registration-number", "--diangong-registration-number",
                         dest="diangong_registration_number", default=None,
                         help="电工杯报名序号（覆盖 decision log）")
+    parser.add_argument("--huawei-team-number", default=None,
+                        help="华为杯参赛队号（仅内部评阅稿；覆盖 decision log）")
     parser.add_argument("--problem", default=None,
                         help="题号/Problem Chosen（覆盖 decision log）")
     parser.add_argument("--title", default=None,
@@ -756,6 +780,7 @@ def main():
             {
                 "mcm_control_number": args.mcm_control_number,
                 "diangong_registration_number": args.diangong_registration_number,
+                "huawei_team_number": args.huawei_team_number,
                 "problem": args.problem,
                 "title": args.title,
                 "keywords": args.keywords,
@@ -767,6 +792,17 @@ def main():
 
     competition = resolve_competition(args.competition, decision_log_path)
     print(f"competition: {competition}")
+
+    if (
+        competition in TEMPLATE_MAP
+        and TEMPLATE_MAP[competition].get("preview_only")
+        and not args.no_compile
+    ):
+        print(
+            "[FAIL] 华为杯当前仅有内部评阅模板。2026 当届《竞赛论文标准文档》"
+            "尚未核对，禁止生成可能被误当作提交件的 PDF；请使用 --no-compile 做结构预检。"
+        )
+        return 1
 
     prefer_pandoc = not args.no_pandoc
     if args.no_pandoc and not args.no_compile:

@@ -25,7 +25,7 @@ next: stage_02_analysis
 
 ## 目标
 
-在题号体系内 (cumcm A-E / mcm A-F / diangong A-B), 选出**最契合团队优势 + 时间预算 + 数据可获取性**的一题，并让选择、否决与后续变更都有据可查。
+在当届实际题号体系内，选出**最契合团队优势 + 时间预算 + 数据可获取性**的一题，并让选择、否决与后续变更都有据可查。华为杯不得在题面发布前从往届题号或类型预判当届候选。
 
 **第一步必做**: 加载 `competitions/<comp>/topic_specs.json` 获取本竞赛的题号清单与每题 `task_type_key`; 选定后写 `decision_log.task_type` (供 stage 3+ 的 dim_weights 加权)。
 
@@ -51,16 +51,20 @@ next: stage_02_analysis
 
 ```bash
 # 路径: <skill>/competitions/<comp>/topic_specs.json
-# 加载后得到本竞赛的题号清单 (cumcm A-E / mcm A-F / diangong A-B) 与每题的 task_type_key
+# 加载后得到已维护的题号清单与 task_type_key；若华为杯 topics 为空，必须从当届试题 ZIP 提取实际候选
 ```
 
 题号体系总览 (引用 `topic_specs.json`):
 
-| Competition | 题号 | 默认子问数 | 主要类型 |
+| Competition | 题号来源 | 子问数来源 | 主要交付形态 |
 |---|---|---|---|
-| cumcm | A 优化, B 评价, C 数据, D 工业, E 创新 | 3-5 | 中文论文 |
-| mcm   | A 连续, B 离散, C 数据, D-F 跨学科方向 | 3-6 | 英文 + 当年题目明确要求的特殊交付物 |
-| diangong | A 电力工程, B 能源数据 | 6-8 | 中文工程 |
+| cumcm | 当前竞赛包 + 当届题面 | 当届题面 | 中文论文 |
+| mcm | 当前竞赛包 + 当届题面 | 当届题面 | 英文论文 + 题目明确要求的特殊交付物 |
+| diangong | 当前竞赛包 + 当届题面 | 当届题面 | 中文工程论文 |
+| huawei | 当届试题 ZIP；赛前不预填 | 当届题面 | 中文论文 + 当届要求的提交材料 |
+
+若竞赛包 `topics` 为空但题面已经发布，直接从官方题面建立本次候选表，
+`decision_log.task_type` 暂用 `default`，除非题型已经由题面证据可靠识别。
 
 ### Step 1: 候选题信息提取 (45 min,可并行)
 

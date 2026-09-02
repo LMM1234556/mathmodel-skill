@@ -121,7 +121,7 @@ python <skill>/scripts/render_paper.py --workspace paper_workspace/
 
 | harness | 推荐配置 |
 |---------|---------|
-| Claude Code | `SKILL.md` description 明确限定 CUMCM、MCM/ICM、电工杯及“数学建模竞赛论文”任务；仅说“建模”“A 题”或普通数据分析时不应触发 |
+| Claude Code | `SKILL.md` description 明确限定 CUMCM、MCM/ICM、电工杯、华为杯研究生数模及相应竞赛论文任务；仅说“建模”“A 题”或普通数据分析时不应触发 |
 | Codex | 安装到 `.agents/skills/` 后由同一 `SKILL.md` description 触发；`agents/openai.yaml` 提供 UI 展示和默认 prompt，原生选择 UI 不可用时才回退编号列表 |
 | Plugin | `.codex-plugin/plugin.json` 声明 `skills: "./skills/"` 并随 GitHub Release 分发 |
 
