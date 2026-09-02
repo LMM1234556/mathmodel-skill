@@ -11,7 +11,7 @@ outputs:
   - "stage.5.cross_reference_chain"
   - "stage.5.assumption_change_history"
 loads_reference: ["references/model_catalog.md", "references/visualization_protocol.md", "competitions/<comp>/winning_patterns.md§5", "references/rubrics.md§Stage_5"]
-loads_template: ["templates/shared/code_starter/<problem_type>.py", "templates/shared/plot_style.py"]
+loads_template: ["templates/shared/code_starter/<problem_type>.py", "templates/shared/matlab/"]
 feedback: ["L1_per_Qi", "sub_checkpoint", "L2_at_end_for_stage_3_4_consistency"]
 next: stage_06_robustness
 ---
@@ -38,7 +38,7 @@ next: stage_06_robustness
 ## 产出
 
 - 每 Qi 的: 数学模型完整公式 + 求解代码 + 可复现结果 + 支撑关键论点所需的图/表 + 物理意义讨论
-- 每张图的 claim、数据来源、生成脚本、编码与 caption 记录在 `figures/figure_registry.json`
+- 每张定量图由 MATLAB 生成；claim、数据来源、`.m` 生成脚本、选图理由、编码与 caption 记录在 `figures/figure_registry.json`
 - 跨子问题: 有依据的依赖显式传递；无依赖时显式记录独立理由
 - 写入 `decision_log.stages.5.sub_problems.{Q1, Q2, Q3, ...}`
 
@@ -93,7 +93,7 @@ Constraints:
 
 ### B. 求解实现 (2-4h)
 
-用 Python (numpy/scipy/sklearn/cvxpy) 实现。**约定**:
+求解器可用 Python (numpy/scipy/sklearn/cvxpy) 或 MATLAB 实现。若用 Python，计算产物必须保存为 CSV/MAT，定量图仍由 MATLAB 读取并生成。**约定**:
 
 ```python
 """
@@ -103,7 +103,6 @@ Q1 求解 - 对应论文 §5.1
 import numpy as np
 import pandas as pd
 import cvxpy as cp
-import matplotlib.pyplot as plt
 import json
 np.random.seed(42)  # 可复现性
 
@@ -198,17 +197,15 @@ for d in deltas:
     profit_d = (p_perturb - c) @ x_star  # 用同一 x*, 看新参数下利润
     profits.append(profit_d)
 
-plt.plot(deltas, profits, 'o-')
-plt.xlabel("p 扰动比例")
-plt.ylabel("利润 (元)")
-plt.title("Q1 子灵敏度: 单价扰动")
-plt.savefig("figures/Q1_sensitivity.png", dpi=300)
+pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
+    "results/Q1_sensitivity_plot_data.csv", index=False
+)
 ```
 
-上面的代码只展示计算结构。正式图表必须读取
-`references/visualization_protocol.md`，并使用
-`templates/shared/plot_style.py` 的 `configure_matplotlib` 与 `save_figure`
-（或实现等价的审计与 sidecar 记录）。先声明这张图支持的论点，再选图形；不得在结果出来后为“丰富论文”补装饰图。
+上面的 Python 代码只输出绘图数据。正式图表必须读取
+`references/visualization_protocol.md`，由 MATLAB 脚本读取 CSV/MAT，并使用
+`templates/shared/matlab/` 中的 `mm_choose_chart`、`mm_style` 与
+`mm_export_figure`。先声明论点和分析任务，再记录所选图形及被拒方案；不得在结果出来后为“丰富论文”补装饰图。
 
 每个 Qi 结束前，将 `.figure.json` sidecar 汇总进
 `figures/figure_registry.json`。同一数据或结论的重复图只保留表达最清楚的一张；需要精确查数时优先使用表格。
@@ -421,7 +418,7 @@ python <skill>/scripts/score_artifact.py \
 2. Stage-level rubric 全维 ≥7
 3. 所有有依据的依赖链已实现并验证；不存在合理依赖时已有明确记录
 4. (championship) red-team 一次,针对最弱的 Qi (优先 review_qis)
-5. `figures/figure_registry.json` 覆盖正文候选图，且不存在错误单位、无来源或无论点的图
+5. `figures/figure_registry.json` 覆盖正文候选图；所有定量图 `renderer=MATLAB`，且不存在错误单位、无来源、无选图理由或无论点的图
 6. 触发 L2: 跨阶段回检 stage 3 (模型选择前提是否被结果推翻) + stage 4 (符号一致性) + **review_qis 列表 (若 verdict=pass_with_review)**
 
 → 跳转 `stage_06_robustness.md`

@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 import cvxpy as cp
 from scipy.optimize import linprog, minimize
-import matplotlib.pyplot as plt
 from pathlib import Path
 
 # ---- 全局可复现性 ----
@@ -22,7 +21,6 @@ np.random.seed(42)
 
 # ---- 输出目录自动创建 (P2-5 修复) ----
 Path("results").mkdir(exist_ok=True)
-Path("figures").mkdir(exist_ok=True)
 
 
 # ============================================================
@@ -245,12 +243,8 @@ if __name__ == "__main__":
     # 保存结果 (供 stage 6 灵敏度复用)
     np.save("results/Q1_x_star.npy", result["x_star"])
 
-    # 可视化
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.bar(range(n), result["x_star"], color='steelblue')
-    ax.set_xlabel("产品编号")
-    ax.set_ylabel("最优产量 (件)")
-    ax.set_title("Q1 最优生产计划")
-    plt.tight_layout()
-    plt.savefig("figures/Q1_x_star.png", dpi=300)
-    print("已保存 figures/Q1_x_star.png")
+    pd.DataFrame({
+        "product_id": np.arange(n),
+        "optimal_quantity": result["x_star"],
+    }).to_csv("results/Q1_x_star_plot_data.csv", index=False)
+    print("已保存 MATLAB 绘图数据 results/Q1_x_star_plot_data.csv")

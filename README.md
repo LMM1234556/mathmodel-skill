@@ -2,7 +2,7 @@
 
 > A structured Agent workflow for CUMCM, MCM/ICM, Diangong Cup, and the Huawei Cup graduate modeling contest — designed to keep a 72–100 hour project coherent from the first decision to the final submission.
 
-[![Version](https://img.shields.io/badge/version-v6.2.0-6f42c1)](./.codex-plugin/plugin.json)
+[![Version](https://img.shields.io/badge/version-v6.3.0-6f42c1)](./.codex-plugin/plugin.json)
 [![CI](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](./scripts/doctor.py)
 [![Competitions](https://img.shields.io/badge/CUMCM%20%7C%20MCM%2FICM%20%7C%20Diangong%20%7C%20Huawei-workflow-f97316)](./competitions/)
@@ -103,7 +103,7 @@ flowchart LR
 | 封面或摘要仍含占位符，却被误当作正式稿       | 正式渲染采用 fail-closed 检查；占位符只能用于显式 dry-run    |
 | 临近提交才发现页数、匿名或 AI 披露问题       | Stage 0、8、9 会重新打开规则入口；未通过合规门不能进入 `submission_ready` |
 | 题目复述流畅，但漏掉限定词、单位或交付物     | Stage 2 保存原文锚点和 SHA-256，独立复读后逐条消解冲突；高影响歧义直接阻断 |
-| 图表像默认软件输出，或好看但不能支持结论     | 每张图绑定 Claim、源结果、生成脚本和 caption；统一样式并在最终尺寸审查 |
+| 图表像默认软件输出，或鲜艳但不能支持结论     | 定量图统一用 MATLAB；每张图绑定 Claim、源结果、`.m` 脚本、选图理由和 caption，并在最终尺寸审查 |
 | 论文像模型说明书，摘要数字又找不到正文依据   | 先建 Claim—Evidence 矩阵和结果卡，再写正文；Stage 9 从摘要反查到结果文件 |
 | Pandoc、TeX 或依赖问题直到最后才暴露         | `doctor.py` 集中检查结构、竞赛包、Python、Pandoc、TeX 与可选依赖 |
 
@@ -378,18 +378,27 @@ references/
   paper_quality_protocol.md       # Claim—Evidence 写作与反向审计
 templates/
   latex/{cumcm,mcm,diangong,huawei}/ # LaTeX 装配模板；huawei 仅内部评阅
-  shared/                        # 状态、AI 台账、表格与 Python 起步代码
+  shared/                        # 状态、AI 台账、Python 计算起步代码与 MATLAB 绘图工具
 config/dim_weights.json          # 竞赛 × 题型 × 阶段的评分权重
 scripts/                         # 环境检查、评分、差分、装配、披露与维护工具
 tests/                           # 回归测试与 fixture
 ```
+
+## v6.3
+
+v6.3 将工作流中的定量图统一到 MATLAB，同时避免把“鲜艳”误解为堆叠颜色。
+
+- Python 或其他求解器可以继续承担数据处理与建模，但必须把绘图数据保存为 CSV/MAT；不再调用 Python 绘图库，定量图由 MATLAB 读取并生成。
+- `templates/shared/matlab/` 提供鲜艳且色盲友好的固定配色、字体与最终尺寸设置、选图路由、结构审计、PDF/PNG 导出和 registry/sidecar 写入。
+- 选图先按趋势、比较、分布、关系、诊断、优化、灵敏度、空间、矩阵或精确查数分类；每张图必须记录 `chart_type_rationale` 和被拒方案。
+- 饼图、雷达图、双轴、3-D、Sankey 与彩虹色图默认不使用；除非存在明确的分析理由，而不是为了视觉新颖。
 
 ## v6.2
 
 v6.2 针对三类常见失败做结构性补强：误读题目、论文证据链松散、图表缺乏信息设计。
 
 - Stage 2 不再只做“三遍精读”。题面版本、SHA-256、原文锚点、限定词、单位、附件字段和交付物进入 `problem_spec.md`；第二次独立复读必须记录冲突，高影响歧义不允许靠默认假设放行。
-- Stage 5 为图表增加 `figure_registry.json` 与 `.figure.json` sidecar。共享 `plot_style.py` 提供色盲友好配色、字体回退、300 dpi/vector 导出和结构警告，但不把视觉规范误当成科学正确性。
+- Stage 5 为图表增加 `figure_registry.json` 与 `.figure.json` sidecar；v6.3 起由 MATLAB 绘图工具接管统一样式、导出与结构警告。
 - Stage 8 先写结果卡和 `claim_evidence_matrix.md`，再写正文；摘要只能使用已锁定 Claim ID。完成全文后以 `reverse_outline.md` 检查每段职责和证据关系。
 - Stage 9 新增两条反向链路：题面 Requirement → 最终交付物，以及摘要 Claim → 正文/结果/验证；图表必须回到源结果并在最终 PDF 尺寸复核。
 - `decision_log.json` 升级为 v3.2，并增加相应回归测试和 doctor 检查。

@@ -40,7 +40,7 @@ REQUIRED_TEX_FILES = {
     "diangong": ("ctexart.cls",),
     "huawei": ("ctexart.cls",),
 }
-MODELING_MODULES = ("numpy", "scipy", "pandas", "matplotlib", "sklearn")
+MODELING_MODULES = ("numpy", "scipy", "pandas", "sklearn")
 CORE_SECTION_MARKERS = {
     "abstract",
     "1_problem_restate",
@@ -137,7 +137,10 @@ def run_checks(
         "config/dim_weights.json",
         "templates/shared/decision_log.json",
         "templates/shared/problem_spec.md",
-        "templates/shared/plot_style.py",
+        "templates/shared/matlab/mm_style.m",
+        "templates/shared/matlab/mm_choose_chart.m",
+        "templates/shared/matlab/mm_audit_figure.m",
+        "templates/shared/matlab/mm_export_figure.m",
         "references/problem_understanding_protocol.md",
         "references/visualization_protocol.md",
         "references/paper_quality_protocol.md",
@@ -303,6 +306,9 @@ def run_checks(
                     value.get("stages", {}).get("2", {}).get("requirement_traceability"),
                     list,
                 )
+                and value.get("stages", {}).get("5", {}).get("figure_policy", {}).get(
+                    "final_quantitative_renderer"
+                ) == "MATLAB"
             )
             checks.append(_check(
                 "workspace-state",
@@ -361,6 +367,14 @@ def run_checks(
             not missing_modules,
             "core modeling modules found" if not missing_modules else f"missing: {', '.join(missing_modules)}",
             "Install templates/shared/requirements.txt." if missing_modules else None,
+        ))
+        matlab = shutil.which("matlab")
+        checks.append(_check(
+            "matlab-figures",
+            matlab is not None,
+            matlab or "MATLAB executable not found",
+            "Install MATLAB and add its bin directory to PATH; quantitative figures require MATLAB."
+            if matlab is None else None,
         ))
 
     return checks

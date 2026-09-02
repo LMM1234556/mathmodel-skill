@@ -7,12 +7,10 @@
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from pathlib import Path
 
 np.random.seed(42)
 Path("results").mkdir(exist_ok=True)
-Path("figures").mkdir(exist_ok=True)
 
 
 # ============================================================
@@ -191,25 +189,21 @@ def fuzzy_comprehensive_evaluation(R, weights, evaluation_grades=None):
 
 
 # ============================================================
-# 6. 可视化辅助
+# 6. 导出 MATLAB 绘图数据
 # ============================================================
-def plot_weights_comparison(ahp_w, entropy_w, combined_w, indicator_names=None):
+def export_weights_plot_data(ahp_w, entropy_w, combined_w, indicator_names=None,
+                             path="results/evaluation_weights_plot_data.csv"):
     n = len(ahp_w)
     if indicator_names is None:
         indicator_names = [f"指标 {i+1}" for i in range(n)]
-    x = np.arange(n)
-    width = 0.25
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(x - width, ahp_w, width, label="AHP", color="steelblue")
-    ax.bar(x, entropy_w, width, label="熵权", color="seagreen")
-    ax.bar(x + width, combined_w, width, label="组合", color="orangered")
-    ax.set_xticks(x)
-    ax.set_xticklabels(indicator_names, rotation=30)
-    ax.set_ylabel("权重")
-    ax.set_title("AHP-熵权-TOPSIS 权重对比")
-    ax.legend()
-    plt.tight_layout()
-    return fig
+    data = pd.DataFrame({
+        "indicator": indicator_names,
+        "ahp_weight": ahp_w,
+        "entropy_weight": entropy_w,
+        "combined_weight": combined_w,
+    })
+    data.to_csv(path, index=False)
+    return data
 
 
 # ============================================================
@@ -241,10 +235,8 @@ if __name__ == "__main__":
     print(f"TOPSIS 得分: {result['topsis_scores']}")
     print(f"排名: {result['rank'] + 1}")  # 转 1-based
 
-    # 可视化
-    fig = plot_weights_comparison(
+    export_weights_plot_data(
         result["ahp_weights"], result["entropy_weights"],
         result["combined_weights"], ["指标A", "指标B", "指标C", "指标D"]
     )
-    plt.savefig("figures/evaluation_weights.png", dpi=300)
-    print("已保存 figures/evaluation_weights.png")
+    print("已保存 MATLAB 绘图数据 results/evaluation_weights_plot_data.csv")

@@ -9,12 +9,10 @@ import numpy as np
 import pandas as pd
 from scipy.stats import qmc
 from scipy.integrate import solve_ivp
-import matplotlib.pyplot as plt
 from pathlib import Path
 
 np.random.seed(42)
 Path("results").mkdir(exist_ok=True)
-Path("figures").mkdir(exist_ok=True)
 
 
 # ============================================================
@@ -154,57 +152,26 @@ def simulate_seir(N=10000, I0=10, beta=0.3, sigma=0.2, gamma=0.1, kappa=0.05, T=
 
 
 # ============================================================
-# 5. 可视化辅助
+# 5. 导出 MATLAB 绘图数据
 # ============================================================
-def plot_lhs_pairs(samples, outputs, param_names):
-    """
-    pairs plot (sensitivity_table.md 图 1)
-    """
+def export_lhs_plot_data(samples, outputs, param_names,
+                         path="results/simulation_lhs_plot_data.csv"):
     df = pd.DataFrame(samples, columns=param_names)
     df["output"] = outputs
-    try:
-        import seaborn as sns
-        g = sns.pairplot(df, diag_kind="kde", plot_kws={"alpha": 0.4})
-        return g.fig
-    except ImportError:
-        # 备用: 简单矩阵
-        d = len(param_names)
-        fig, axes = plt.subplots(d, d, figsize=(d*3, d*3))
-        for i in range(d):
-            for j in range(d):
-                if i == j:
-                    axes[i, j].hist(samples[:, i], bins=20, color='steelblue')
-                else:
-                    axes[i, j].scatter(samples[:, j], samples[:, i],
-                                        c=outputs, cmap='viridis', s=10, alpha=0.5)
-                if i == d - 1:
-                    axes[i, j].set_xlabel(param_names[j])
-                if j == 0:
-                    axes[i, j].set_ylabel(param_names[i])
-        plt.tight_layout()
-        return fig
+    df.to_csv(path, index=False)
+    return df
 
 
-def plot_tornado(sobol_result, output_label="目标函数"):
-    """
-    Tornado 图 (sensitivity_table.md 图 2)
-    """
+def export_sobol_plot_data(sobol_result,
+                           path="results/simulation_sobol_plot_data.csv"):
     sorted_items = sorted(sobol_result.items(), key=lambda x: x[1]["S1"])
-    names = [item[0] for item in sorted_items]
-    s1s = [item[1]["S1"] for item in sorted_items]
-    sts = [item[1]["ST"] for item in sorted_items]
-
-    y = np.arange(len(names))
-    fig, ax = plt.subplots(figsize=(8, 4))
-    ax.barh(y - 0.2, s1s, 0.4, label="一阶 $S_1$", color="steelblue")
-    ax.barh(y + 0.2, sts, 0.4, label="总指数 $S_T$", color="orangered")
-    ax.set_yticks(y)
-    ax.set_yticklabels(names)
-    ax.set_xlabel("Sobol 灵敏度指数")
-    ax.set_title(f"{output_label} Sobol 灵敏度指数")
-    ax.legend()
-    plt.tight_layout()
-    return fig
+    data = pd.DataFrame({
+        "parameter": [item[0] for item in sorted_items],
+        "S1": [item[1]["S1"] for item in sorted_items],
+        "ST": [item[1]["ST"] for item in sorted_items],
+    })
+    data.to_csv(path, index=False)
+    return data
 
 
 # ============================================================
@@ -216,17 +183,13 @@ if __name__ == "__main__":
     print(f"峰值感染数: {result['peak_I']:.0f}")
     print(f"峰值时间: 第 {result['peak_t']:.1f} 天")
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(result["t"], result["S"], label="易感 S")
-    ax.plot(result["t"], result["E"], label="潜伏 E")
-    ax.plot(result["t"], result["I"], label="感染 I", color='red', lw=2)
-    ax.plot(result["t"], result["R"], label="康复 R")
-    ax.set_xlabel("时间 (天)")
-    ax.set_ylabel("人数")
-    ax.set_title("带隔离移除项的 SEIR 模型仿真")
-    ax.legend()
-    plt.tight_layout()
-    plt.savefig("figures/simulation_seir.png", dpi=300)
+    pd.DataFrame({
+        "time_day": result["t"],
+        "susceptible": result["S"],
+        "exposed": result["E"],
+        "infected": result["I"],
+        "removed": result["R"],
+    }).to_csv("results/simulation_seir_plot_data.csv", index=False)
 
     # LHS 联合灵敏度
     def simulator(beta, sigma, gamma, kappa):
@@ -242,8 +205,9 @@ if __name__ == "__main__":
         print(f"  Peak I 5%-95% 区间: [{r['stats']['p5']:.0f}, {r['stats']['p95']:.0f}]")
         print(f"  CV: {r['stats']['cv']*100:.2f}%")
 
-    # 画 LHS pairs (取 ±10% 档)
-    fig = plot_lhs_pairs(sens_results[0.10]["samples"],
-                          sens_results[0.10]["outputs"], param_names)
-    plt.savefig("figures/simulation_lhs_pairs.png", dpi=300)
-    print("\n所有图已保存 figures/")
+    export_lhs_plot_data(
+        sens_results[0.10]["samples"],
+        sens_results[0.10]["outputs"],
+        param_names,
+    )
+    print("\n已保存 MATLAB 绘图数据到 results/")

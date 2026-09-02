@@ -142,7 +142,12 @@
       },
       "cross_reference_chain": {},
       "assumption_change_history": [],
-      "figure_registry_path": "figures/figure_registry.json"
+      "figure_registry_path": "figures/figure_registry.json",
+      "figure_policy": {
+        "final_quantitative_renderer": "MATLAB",
+        "chart_type_rationale_required": true,
+        "vivid_colorblind_palette_required": true
+      }
     },
     "6": {
       "_label": "robustness",
@@ -175,6 +180,8 @@
         "requirements_mapped": false,
         "claims_traced": false,
         "figures_registered": false,
+        "matlab_final_figures_only": false,
+        "chart_types_justified": false,
         "reverse_outline_completed": false
       },
       "anchor_phrase_hits": {},

@@ -99,7 +99,10 @@ python --version           # ≥ 3.10
 python <skill>/scripts/doctor.py --competition cumcm --workspace .
 
 # 完整建模依赖检查 (一次性安装见 templates/shared/requirements.txt)
-python -c "import numpy, scipy, sklearn, cvxpy, matplotlib, pandas, statsmodels, seaborn, SALib, pdfplumber, imblearn"
+python -c "import numpy, scipy, sklearn, cvxpy, pandas, statsmodels, SALib, pdfplumber, imblearn"
+
+# MATLAB 是工作流中定量图的必备渲染器
+matlab -batch "disp(version); assert(exist('exportgraphics','file')==2)"
 
 # 关键 solver 检查 (优化类必备)
 python -c "import cvxpy; assert 'GLPK_MI' in cvxpy.installed_solvers(), '需 pip install cvxopt'"

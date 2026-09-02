@@ -11,12 +11,10 @@ from sklearn.linear_model import LinearRegression, Ridge
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import statsmodels.api as sm
-import matplotlib.pyplot as plt
 from pathlib import Path
 
 np.random.seed(42)
 Path("results").mkdir(exist_ok=True)
-Path("figures").mkdir(exist_ok=True)
 
 
 def _safe_mape(y_true, y_pred, zero_tol=1e-12):
@@ -171,7 +169,7 @@ def ensemble_prediction(predictions_dict, weights=None):
 # ============================================================
 def residual_diagnostics(y_true, y_pred):
     """
-    计算多个指标 + 可视化残差
+    计算多个指标，并返回供 MATLAB 绘图的逐点诊断数据
     """
     residuals = y_true - y_pred
     metrics = {
@@ -182,18 +180,13 @@ def residual_diagnostics(y_true, y_pred):
         "DurbinWatson": sm.stats.durbin_watson(residuals),
     }
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
-    axes[0].plot(y_true, label="真实", marker='o')
-    axes[0].plot(y_pred, label="预测", marker='x')
-    axes[0].legend()
-    axes[0].set_title("预测 vs 真实")
-    axes[1].plot(residuals, marker='.')
-    axes[1].axhline(0, color='red', ls='--')
-    axes[1].set_title("残差时序")
-    axes[2].hist(residuals, bins=20)
-    axes[2].set_title("残差直方图")
-    plt.tight_layout()
-    return metrics, fig
+    diagnostics = pd.DataFrame({
+        "index": np.arange(len(residuals)),
+        "actual": np.asarray(y_true),
+        "predicted": np.asarray(y_pred),
+        "residual": np.asarray(residuals),
+    })
+    return metrics, diagnostics
 
 
 # ============================================================
@@ -222,8 +215,8 @@ if __name__ == "__main__":
     )
 
     # 4. 评估
-    metrics, fig = residual_diagnostics(y[48:], ensemble["ensemble"])
+    metrics, diagnostics = residual_diagnostics(y[48:], ensemble["ensemble"])
     print(f"组合预测指标: {metrics}")
 
-    plt.savefig("figures/prediction_diagnostics.png", dpi=300)
-    print("已保存 figures/prediction_diagnostics.png")
+    diagnostics.to_csv("results/prediction_diagnostics_plot_data.csv", index=False)
+    print("已保存 MATLAB 绘图数据 results/prediction_diagnostics_plot_data.csv")

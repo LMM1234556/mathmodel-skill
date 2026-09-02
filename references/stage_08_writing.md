@@ -91,7 +91,7 @@ Before moving on, verify:
 - chosen models match Stage 3;
 - reported values match stored results rather than regenerated prose;
 - figures have readable labels, units, captions, and source paths;
-- every figure used by the paper has a `figure_registry.json` entry and was inspected at final PDF size;
+- every quantitative figure used by the paper has `renderer=MATLAB`, a `.m` generator, a chart-type rationale, a `figure_registry.json` entry, and final-PDF-size inspection;
 - claims and citations are verifiable;
 - limitations name a concrete failure mode and mitigation.
 

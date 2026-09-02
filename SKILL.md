@@ -3,11 +3,11 @@ name: mathmodel-skill
 description: CUMCM 国赛、MCM/ICM 美赛、电工杯与“华为杯”中国研究生数学建模竞赛的端到端协作与质量控制工作流。Use when a user explicitly works on one of these contests or asks to run/review a modeling-competition project from problem interpretation through modeling, evidence-based figures, paper writing, compliance, and submission review. Provides source-anchored requirement traceability, persistent state, competition-specific rules/templates, deterministic helpers, and Codex/Claude Code handoff. Do not trigger for generic model selection, ordinary data analysis, or non-competition paper review.
 ---
 
-# mathmodel-skill — 数学建模四竞赛工作流 (v6.2)
+# mathmodel-skill — 数学建模四竞赛工作流 (v6.3)
 
 10 阶段把 72–100 小时的竞赛协作变成可恢复、可检查的流程。用户回答关键问题，agent 维护状态与脚本。每阶段产出经过 rubric 自评、定向精修与跨阶段一致性回检；Stage 8–9 先遵守当届官方规则，再做多视角终审。CUMCM 包含 91 份来源文档，其中 59 份进入文本统计；MCM/电工杯/华为杯经验统计明确为 `n=0`，不提供合成分位。
 
-**v6.2 更新**: 加入题面原文追踪与独立复读闸门、论点—证据矩阵、图表 registry/sidecar 和统一绘图辅助；Stage 9 增加题意到交付物、摘要到结果的反向审计。
+**v6.3 更新**: 工作流中的定量图统一由 MATLAB 生成；加入高对比鲜艳但色盲友好的主题、任务驱动选图路由、结构审计和图表 registry/sidecar。Python 可用于建模计算，但须把绘图数据导出给 MATLAB。
 
 ---
 
@@ -27,7 +27,7 @@ Codex 优先按 skill 目录发现本文件:
 
 ## Harness 兼容 (Claude Code / Codex)
 
-本 skill v6.2 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
+本 skill v6.3 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
 
 | harness | 入口文件 | 用户交互工具 | 状态文件 |
 |---------|---------|-------------|---------|
@@ -151,7 +151,7 @@ Codex 优先按 skill 目录发现本文件:
 - **stage 1**: `competitions/<comp>/topic_specs.json` (题号 → task_type 映射)
 - **stage 2**: `references/problem_understanding_protocol.md` + `templates/shared/problem_spec.md`
 - stage 3, 5: `references/model_catalog.md` (跨竞赛通用)
-- **stage 5 / 8 / 9**: `references/visualization_protocol.md`; 图表脚本可复制 `templates/shared/plot_style.py`
+- **stage 5 / 8 / 9**: `references/visualization_protocol.md`; 所有定量图必须由 MATLAB 生成，复制 `templates/shared/matlab/` 使用 `mm_choose_chart`、`mm_style` 与 `mm_export_figure`
 - **stage 5**: per-Qi 评分跑完后调 `scripts/score_artifact.py --mode aggregate_qi` 聚合
 - **stage 0 / 8 / 9**: `competitions/<comp>/current_rules.md` 存在时读取，并核对其中官方链接
 - **stage 8**: `competitions/<comp>/{winning_patterns, phrase_bank, abstract_template, paper_skeleton}.md`

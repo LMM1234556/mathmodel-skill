@@ -1,7 +1,7 @@
 {
   "name": "mathmodel-skill",
-  "version": "6.2.0",
-  "description": "A stateful ten-stage workflow with source-anchored problem interpretation, evidence-based figures, paper traceability, and compliance review for CUMCM, MCM/ICM, Diangong Cup, and Huawei Cup graduate modeling.",
+  "version": "6.3.0",
+  "description": "A stateful ten-stage workflow with source-anchored problem interpretation, evidence-based MATLAB figures, paper traceability, and compliance review for CUMCM, MCM/ICM, Diangong Cup, and Huawei Cup graduate modeling.",
   "author": {
     "name": "handsomeZR-netizen",
     "url": "https://github.com/handsomeZR-netizen"

@@ -19,13 +19,10 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     roc_auc_score, confusion_matrix, classification_report
 )
-import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
 
 np.random.seed(42)
 Path("results").mkdir(exist_ok=True)
-Path("figures").mkdir(exist_ok=True)
 
 
 # ============================================================
@@ -147,41 +144,27 @@ def handle_imbalanced(X, y, method="smote"):
 
 
 # ============================================================
-# 5. 可视化
+# 5. 导出 MATLAB 绘图数据
 # ============================================================
-def plot_confusion_matrix(cm, class_names=None, title="混淆矩阵"):
-    fig, ax = plt.subplots(figsize=(6, 5))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-                xticklabels=class_names, yticklabels=class_names, ax=ax)
-    ax.set_xlabel("预测类别")
-    ax.set_ylabel("真实类别")
-    ax.set_title(title)
-    plt.tight_layout()
-    return fig
-
-
-def plot_model_comparison(results):
-    """
-    柱状图对比多模型 F1
-    """
-    names = list(results.keys())
-    f1s = [results[n]["metrics"]["f1"] for n in names]
-    cv_means = [results[n]["cv_f1_mean"] for n in names]
-    cv_stds = [results[n]["cv_f1_std"] for n in names]
-
-    x = np.arange(len(names))
-    width = 0.35
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(x - width/2, f1s, width, label="测试集 F1", color="steelblue")
-    ax.bar(x + width/2, cv_means, width, yerr=cv_stds, label="5 折 CV F1 (均值±std)",
-           color="seagreen", capsize=4)
-    ax.set_xticks(x)
-    ax.set_xticklabels(names, rotation=30)
-    ax.set_ylabel("F1 (weighted)")
-    ax.set_title("分类模型对比")
-    ax.legend()
-    plt.tight_layout()
-    return fig
+def export_plot_data(results, confusion, class_names=None, output_dir="results"):
+    """保存稳定的 CSV，定量图由 MATLAB 读取并生成。"""
+    output = Path(output_dir)
+    output.mkdir(exist_ok=True)
+    comparison = pd.DataFrame([
+        {
+            "model": name,
+            "test_f1": value["metrics"]["f1"],
+            "cv_f1_mean": value["cv_f1_mean"],
+            "cv_f1_std": value["cv_f1_std"],
+        }
+        for name, value in results.items()
+    ])
+    comparison.to_csv(output / "classification_comparison_plot_data.csv", index=False)
+    labels = class_names or [f"class_{i}" for i in range(confusion.shape[0])]
+    pd.DataFrame(confusion, index=labels, columns=labels).to_csv(
+        output / "classification_confusion_matrix_plot_data.csv",
+        index_label="actual_class",
+    )
 
 
 # ============================================================
@@ -205,10 +188,9 @@ if __name__ == "__main__":
     stack_result = stacking_classifier(X_train, X_test, y_train, y_test)
     print(f"\nStacking 集成: F1={stack_result['metrics']['f1']:.3f}")
 
-    # 可视化
-    fig = plot_model_comparison(results)
-    plt.savefig("figures/classification_comparison.png", dpi=300)
-    fig2 = plot_confusion_matrix(stack_result["confusion_matrix"], class_names=["类 0", "类 1"],
-                                  title="Stacking 混淆矩阵")
-    plt.savefig("figures/classification_stacking_cm.png", dpi=300)
-    print("\n图已保存 figures/")
+    export_plot_data(
+        results,
+        stack_result["confusion_matrix"],
+        class_names=["类 0", "类 1"],
+    )
+    print("\n已保存 MATLAB 绘图数据到 results/")

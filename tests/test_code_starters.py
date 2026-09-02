@@ -1,7 +1,6 @@
 """针对 code starter 科研正确性边界的回归测试。"""
 
 import importlib.util
-import os
 from pathlib import Path
 import sys
 import types
@@ -9,10 +8,6 @@ import unittest
 from unittest.mock import patch
 import warnings
 
-os.environ.setdefault("MPLBACKEND", "Agg")
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/mathmodel-matplotlib-tests")
-
-import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.pipeline import Pipeline
@@ -146,18 +141,21 @@ class PredictionStarterTests(unittest.TestCase):
     def test_mape_ignores_undefined_zero_actual_terms(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            metrics, fig = prediction.residual_diagnostics(
+            metrics, diagnostics = prediction.residual_diagnostics(
                 np.array([0.0, 2.0]), np.array([100.0, 1.0]))
-        self.addCleanup(plt.close, fig)
         self.assertAlmostEqual(metrics["MAPE"], 50.0)
+        self.assertEqual(
+            list(diagnostics.columns),
+            ["index", "actual", "predicted", "residual"],
+        )
 
     def test_all_zero_actuals_report_undefined_mape_without_division(self):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            metrics, fig = prediction.residual_diagnostics(
+            metrics, diagnostics = prediction.residual_diagnostics(
                 np.zeros(3), np.ones(3))
-        self.addCleanup(plt.close, fig)
         self.assertTrue(np.isnan(metrics["MAPE"]))
+        self.assertEqual(len(diagnostics), 3)
 
 
 if __name__ == "__main__":

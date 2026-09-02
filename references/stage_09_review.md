@@ -107,6 +107,9 @@ Compare every inserted figure with `figures/figure_registry.json` and its
 `.figure.json` sidecar. Re-open the underlying result file for headline figures.
 Inspect at final physical size and record failures; do not approve charts from a
 notebook thumbnail or source code alone.
+For every quantitative figure also verify `renderer=MATLAB`, a resolvable `.m`
+generator, and a credible `chart_type_rationale`; a Python/notebook screenshot
+or an unjustified chart type is a high-severity issue.
 
 ## 5. Run the five-view panel
 

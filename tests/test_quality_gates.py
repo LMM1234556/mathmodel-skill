@@ -4,31 +4,11 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 from pathlib import Path
 import tempfile
 import unittest
 
-
-os.environ.setdefault("MPLBACKEND", "Agg")
-os.environ.setdefault("MPLCONFIGDIR", "/tmp/mathmodel-matplotlib-tests")
-
-import matplotlib.pyplot as plt
-
-
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def load_plot_style():
-    path = ROOT / "templates" / "shared" / "plot_style.py"
-    spec = importlib.util.spec_from_file_location("mathmodel_plot_style", path)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-plot_style = load_plot_style()
 
 
 def load_migrate_state():
@@ -81,66 +61,66 @@ class QualityGatePackageTests(unittest.TestCase):
         self.assertIn("requirement_traceability", state["stages"]["2"])
         self.assertIn("claim_evidence_matrix_path", state["stages"]["8"])
         self.assertIn("figure_audit_passed", state["stages"]["9"])
+        self.assertEqual(
+            state["stages"]["5"]["figure_policy"]["final_quantitative_renderer"],
+            "MATLAB",
+        )
+        self.assertIn(
+            "matlab_final_figures_only",
+            state["stages"]["8"]["paper_quality_checks"],
+        )
 
 
-class PlotStyleTests(unittest.TestCase):
-    def tearDown(self) -> None:
-        plt.close("all")
+class MatlabFigurePipelineTests(unittest.TestCase):
+    def test_matlab_helpers_and_test_exist(self) -> None:
+        helper = ROOT / "templates" / "shared" / "matlab"
+        for name in (
+            "mm_style.m",
+            "mm_choose_chart.m",
+            "mm_audit_figure.m",
+            "mm_export_figure.m",
+        ):
+            self.assertTrue((helper / name).is_file(), name)
+        self.assertTrue(
+            (ROOT / "tests" / "matlab" / "test_mm_figure_pipeline.m").is_file()
+        )
 
-    def test_missing_evidence_metadata_fails_closed(self) -> None:
-        fig, ax = plt.subplots()
-        ax.plot([0, 1], [0, 1])
-        ax.set(xlabel="x", ylabel="y")
-        with tempfile.TemporaryDirectory() as temp:
-            with self.assertRaisesRegex(ValueError, "figure_id"):
-                plot_style.save_figure(
-                    fig,
-                    Path(temp) / "bad",
-                    figure_id="",
-                    claim="claim",
-                    caption="caption",
-                    source_paths=["results/source.csv"],
-                    generator="results/plot.py",
-                )
+    def test_protocol_requires_matlab_and_chart_rationale(self) -> None:
+        protocol = (ROOT / "references" / "visualization_protocol.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('renderer != "MATLAB"', protocol)
+        self.assertIn("chart_type_rationale", protocol)
+        self.assertIn("mm_choose_chart", protocol)
+        self.assertNotIn("plot_style.py", protocol)
 
-    def test_save_figure_writes_outputs_sidecar_and_registry(self) -> None:
-        selected_font = plot_style.configure_matplotlib("en")
-        self.assertIsInstance(selected_font, str)
-        self.assertTrue(selected_font)
+    def test_python_starters_do_not_plot(self) -> None:
+        starters = ROOT / "templates" / "shared" / "code_starter"
+        combined = "\n".join(
+            path.read_text(encoding="utf-8") for path in starters.glob("*.py")
+        )
+        self.assertNotIn("matplotlib", combined)
+        self.assertNotIn("seaborn", combined)
+        self.assertNotIn("plt.", combined)
 
-        fig, ax = plt.subplots()
-        ax.plot([0, 1, 2], [0, 1, 4], label="model")
-        ax.set(xlabel="Time (h)", ylabel="Objective (unit)")
-        ax.legend()
-
-        with tempfile.TemporaryDirectory() as temp:
-            stem = Path(temp) / "figures" / "q1_result"
-            record = plot_style.save_figure(
-                fig,
-                stem,
-                figure_id="Q1-F01",
-                claim="The objective increases across the tested times.",
-                caption="Objective values for the three tested times.",
-                source_paths=["results/q1.csv"],
-                generator="results/plot_q1.py",
-            )
-
-            self.assertTrue(stem.with_suffix(".png").is_file())
-            self.assertTrue(stem.with_suffix(".pdf").is_file())
-            self.assertTrue(stem.with_suffix(".figure.json").is_file())
-            registry = stem.parent / "figure_registry.json"
-            self.assertTrue(registry.is_file())
-            data = json.loads(registry.read_text(encoding="utf-8"))
-            self.assertEqual(data["figures"][0]["figure_id"], "Q1-F01")
-            self.assertEqual(record["audit_issues"], [])
-
-    def test_audit_reports_missing_axis_labels(self) -> None:
-        fig, ax = plt.subplots()
-        ax.plot([0, 1], [1, 2])
-        issues = plot_style.audit_figure(fig)
-        problems = " ".join(item["problem"] for item in issues)
-        self.assertIn("x 轴", problems)
-        self.assertIn("y 轴", problems)
+    def test_export_helper_fails_closed_on_evidence_fields(self) -> None:
+        helper = (
+            ROOT / "templates" / "shared" / "matlab" / "mm_export_figure.m"
+        ).read_text(encoding="utf-8")
+        for field in (
+            "figure_id",
+            "claim",
+            "decision",
+            "source_paths",
+            "generator",
+            "chart_type",
+            "chart_type_rationale",
+            "encoding",
+            "uncertainty",
+            "caption",
+        ):
+            self.assertIn(f'"{field}"', helper)
+        self.assertIn("record.renderer = 'MATLAB'", helper)
 
 
 class StateMigrationTests(unittest.TestCase):
