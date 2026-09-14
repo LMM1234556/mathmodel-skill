@@ -4,6 +4,14 @@
 
 ## 运行时工具
 
+### `init_project.py` — Stage 0 确定性初始化
+
+仅在参赛者明确确认赛事与年份后由 Agent 调用。三个参数均为必填；脚本不会默认采用 CUMCM，也不会覆盖已有的 `decision_log.json` 或 `rules_snapshot.json`。
+
+```bash
+python scripts/init_project.py --workspace /path/to/project --competition huawei --year 2026
+```
+
 ### `doctor.py` — 环境与包结构预检
 
 在启动工作流或切换竞赛时运行。默认同时检查 skill 结构、竞赛包、JSON 配置和本地渲染工具；`--skip-tools` 适合 CI 或只做静态检查。

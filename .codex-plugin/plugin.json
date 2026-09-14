@@ -1,6 +1,6 @@
 {
   "name": "mathmodel-skill",
-  "version": "6.6.0",
+  "version": "6.7.0",
   "description": "A stateful ten-stage workflow with per-question human approval, data isolation, candidate-model comparison, evidence-based MATLAB figures, paper traceability, and compliance review for CUMCM, MCM/ICM, Diangong Cup, and Huawei Cup graduate modeling.",
   "author": {
     "name": "handsomeZR-netizen",

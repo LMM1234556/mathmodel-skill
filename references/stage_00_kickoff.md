@@ -59,17 +59,26 @@ next: "stage_01_problem_selection | wait_for_prompt"
 
 用户已经明确提供时直接复述确认，不重复询问。缺失时只问缺失项，不把题号、模型、规则版本等问题混进这一轮。不得默认选择 cumcm；“让我决定”只能用于根据用户已表达的赛事目标消歧，不能凭空替用户选择比赛。
 
-确定后由 agent 初始化 state，并立即写入：
+确定后由 agent 调用初始化器，不让参赛者手工执行：
+
+```bash
+python <skill>/scripts/init_project.py \
+  --workspace <cwd> \
+  --competition <comp> \
+  --year <year>
+```
+
+初始化器必须写入：
 
 - `decision_log.competition`；
 - `decision_log.problem_meta.year`；
 - `decision_log.compliance.ruleset.competition_year`。
 
-赛事和年份写入前，不得加载任何 `competitions/<comp>/` 规则、模板、经验统计或题号列表。
+赛事和年份写入前，不得加载任何 `competitions/<comp>/` 规则、模板、经验统计或题号列表。若任一状态文件已存在，初始化器必须拒绝覆盖；agent 改为读取、核对并恢复已有项目。
 
 ### Step 1B: 当届规则核验 (3 min) — 第二个交互门
 
-读取 `references/rule_verification_protocol.md`，复制规则快照模板到 `<cwd>/state/rules_snapshot.json`，再只读取已选赛事的 `competitions/<comp>/current_rules.md`。打开其中官方来源，核验目标年份的参赛资格、赛程、题目下载、论文格式、匿名、提交文件、提交流程、AI、引用与原创性要求；仓库经验值不能覆盖官方通知。
+读取 `references/rule_verification_protocol.md`，打开初始化器生成的 `<cwd>/state/rules_snapshot.json`，再只读取已选赛事的 `competitions/<comp>/current_rules.md`。打开其中官方来源，核验目标年份的参赛资格、赛程、题目下载、论文格式、匿名、提交文件、提交流程、AI、引用与原创性要求；仓库经验值不能覆盖官方通知。
 
 - 每类规则在快照中只能标为 `confirmed`、`unknown` 或 `not_applicable`；`confirmed` 必须绑定事实与官方来源 ID，`not_applicable` 也必须有官方来源和理由。
 - 当届规则完整：写入 `basis_year=competition_year`、`basis_status=current_official`、`replacement_required=false`。
@@ -151,13 +160,9 @@ which git
 pip install -r <skill>/templates/shared/requirements.txt
 ```
 
-**目录初始化** (agent 自动执行, 不要让用户敲命令):
-```bash
-mkdir -p state results figures paper_workspace
-cp <skill>/templates/shared/decision_log.json state/decision_log.json   # 仅当不存在时
-```
-
-写入 `decision_log.competition` 字段: agent 用 Read + Edit/Write (Claude Code) 或 apply_patch (Codex CLI) 完成, 不要让用户跑 `python -c ...`。
+**初始化结果检查**：确认 Step 1A 的 `init_project.py` 已生成
+`state/{decision_log.json,rules_snapshot.json}` 与
+`results/`、`figures/`、`paper_workspace/`。不得在这里再次复制模板或覆盖状态。
 
 确认 (按 competition 分支):
 | competition | LaTeX 模板 | 引擎 | 静态资料 |

@@ -19,3 +19,8 @@ Status on 2026-09-14:
 Update the pack after the official files are published and preserve their URLs,
 dates, and hashes. Do not copy requirements from CUMCM or Diangong merely because
 all three use Chinese papers.
+
+For a new 2026 workspace, `init_project.py --competition huawei --year 2026`
+must leave the problem ID, subproblem count, rule basis, and official-source list
+empty. Those fields are populated only after the current problem and official
+documents are actually opened; the initializer never enables the 2025 fallback.

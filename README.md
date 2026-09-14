@@ -2,7 +2,7 @@
 
 > A structured Agent workflow for CUMCM, MCM/ICM, Diangong Cup, and the Huawei Cup graduate modeling contest — designed to keep a 72–100 hour project coherent from the first decision to the final submission.
 
-[![Version](https://img.shields.io/badge/version-v6.6.0-6f42c1)](./.codex-plugin/plugin.json)
+[![Version](https://img.shields.io/badge/version-v6.7.0-6f42c1)](./.codex-plugin/plugin.json)
 [![CI](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](./scripts/doctor.py)
 [![Competitions](https://img.shields.io/badge/CUMCM%20%7C%20MCM%2FICM%20%7C%20Diangong%20%7C%20Huawei-workflow-f97316)](./competitions/)
@@ -344,7 +344,8 @@ python -m pip show reportlab
 ```text
 my-modeling-project/
 ├── state/
-│   ├── decision_log.json       # 决策、评分、回退、规则与 AI 使用台账
+│   ├── decision_log.json       # 流程路由、决策摘要、评分、回退与 AI 使用台账
+│   ├── rules_snapshot.json     # 当届规则、官方来源、未知项与冲突
 │   ├── problem_spec.md         # 原文锚点、原子要求、歧义与数学对象映射
 │   ├── interpretation_review.md # 独立复读与冲突消解
 │   └── questions/Qi/question_contract.json # 每道题的数据、模型、验证、图表与批准状态
@@ -362,6 +363,7 @@ Codex 与 Claude Code 可以在同一目录中接力。`decision_log.json` 负�
 | 工具                         | 用途                                                  | 典型调用                                                     |
 | ---------------------------- | ----------------------------------------------------- | ------------------------------------------------------------ |
 | `scripts/doctor.py`          | 检查 skill 结构、竞赛包、环境与工作区                 | `python <skill>/scripts/doctor.py --competition mcm`         |
+| `scripts/init_project.py`    | 在赛事与年份确认后初始化状态；拒绝默认值和覆盖已有项目 | `python <skill>/scripts/init_project.py --workspace . --competition huawei --year 2026` |
 | `scripts/score_artifact.py`  | 校验 critic JSON、重算加权分数与 verdict、聚合 per-Qi | `python <skill>/scripts/score_artifact.py ...`               |
 | `scripts/extract_diff.py`    | 生成并应用 section-level patch                        | `python <skill>/scripts/extract_diff.py --apply ...`         |
 | `scripts/render_paper.py`    | 将标准 Markdown 工作区装配为对应竞赛的 TeX/PDF        | `python <skill>/scripts/render_paper.py --competition cumcm --workspace paper_workspace` |
@@ -401,6 +403,15 @@ config/dim_weights.json          # 竞赛 × 题型 × 阶段的评分权重
 scripts/                         # 环境检查、评分、差分、装配、披露与维护工具
 tests/                           # 回归测试与 fixture
 ```
+
+## v6.7
+
+v6.7 将 Stage 0 的第一道交互门落实为确定性初始化，而不是依赖 Agent 手工复制和修改 JSON。
+
+- 新增 `init_project.py`：`--competition`、`--year` 和 `--workspace` 全部必填，没有隐式默认赛事。
+- 同时生成相互一致的 `decision_log.json` 与 `rules_snapshot.json`，并创建结果、图表和论文工作目录。
+- 检测到已有状态立即停止，不覆盖、不重置，提示 Agent 恢复已有项目。
+- 增加“2026 华为杯、题面未公布”烟雾测试，确保题号、子问数、规则依据和来源不会被历史数据预填。
 
 ## v6.6
 

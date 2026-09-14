@@ -596,7 +596,7 @@ def update_decision_log(stage_id: int, critique: dict, decision_log_path: Path,
     if not decision_log_path.exists():
         raise FileNotFoundError(
             f"{decision_log_path} 不存在。"
-            f"请先 stage 0 初始化 (cp <skill>/templates/shared/decision_log.json {decision_log_path})"
+            "请先完成 Stage 0 Gate S0-A，并用 init_project.py 明确赛事和年份后初始化工作区。"
         )
 
     with open(decision_log_path, "r", encoding="utf-8") as f:

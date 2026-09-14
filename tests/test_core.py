@@ -713,6 +713,20 @@ class ExtractDiffTests(unittest.TestCase):
 
 
 class DoctorTests(unittest.TestCase):
+    def test_cli_requires_explicit_competition(self) -> None:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "doctor.py"),
+                "--skip-tools",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("--competition", result.stderr)
+
     def test_all_competition_preflights_pass(self) -> None:
         for competition in doctor.COMPETITIONS:
             with self.subTest(competition=competition):

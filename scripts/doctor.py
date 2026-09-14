@@ -153,6 +153,7 @@ def run_checks(
         "scripts/extract_diff.py",
         "scripts/render_paper.py",
         "scripts/render_ai_usage.py",
+        "scripts/init_project.py",
         "scripts/migrate_state.py",
         "scripts/audit_ruleset.py",
         "scripts/audit_question_contracts.py",
@@ -499,7 +500,7 @@ def _print_human(checks: list[Check]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check mathmodel-skill readiness.")
-    parser.add_argument("--competition", choices=COMPETITIONS, default="cumcm")
+    parser.add_argument("--competition", choices=COMPETITIONS, required=True)
     parser.add_argument("--workspace", type=Path, default=None)
     parser.add_argument("--json", action="store_true", dest="as_json")
     parser.add_argument("--skip-tools", action="store_true", help="skip local Pandoc/TeX checks")

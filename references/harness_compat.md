@@ -28,7 +28,7 @@ Codex 触发优先依赖 `SKILL.md` frontmatter 的 `description`; UI 展示与�
 | 离散选项 (选竞赛/选题/选模型/选 verdict) | **必须**用问答式 (Claude: AskUserQuestion; Codex: markdown 编号列表) |
 | 自由文本 (PDF 路径 / 截止时间 / 关键评论) | 直接问, 单行回复 |
 | 确认型 (yes/no/进入下一步) | 编号 2 选 1, 或加"让我决定 (推荐 X)" 作为第 3 项 |
-| 状态读写 (state/decision_log.json) | agent 自动完成, **不要**让用户编辑 json |
+| 状态读写 (`state/*.json`) | agent 自动完成, **不要**让用户编辑 json |
 
 ### Claude Code (有 AskUserQuestion)
 
@@ -84,6 +84,7 @@ AskUserQuestion(questions=[{
 
 ```bash
 python <skill>/scripts/score_artifact.py --stage 5 --critique state/critique_v0.json
+python <skill>/scripts/init_project.py --workspace . --competition huawei --year 2026
 python scripts/extract_diff.py --artifact a.md --critique c.json --mode section
 python <skill>/scripts/render_paper.py --workspace paper_workspace/
 ```
@@ -106,14 +107,15 @@ python <skill>/scripts/render_paper.py --workspace paper_workspace/
 
 ## 5. 持久 state: harness 互通
 
-**核心保证**: `<cwd>/state/decision_log.json` 是 single source of truth, 跨 harness 完全兼容。
+**核心保证**: `<cwd>/state/decision_log.json` 是流程路由与摘要索引；
+`state/rules_snapshot.json` 和 `state/questions/<Qi>/question_contract.json` 是各自领域的详细证据源。三者均落盘、互相校验且跨 harness 兼容，不能只依赖对话记忆。
 
 实际场景:
 - Day 1 用 Codex 跑 stage 0-2 → decision_log 写到 stage 2 完成
 - Day 2 队员换 Claude Code → 读同一 decision_log → 从 stage 3 起步
 - Day 3 又切回 Codex → 仍然从 current_stage 接着跑
 
-**禁止**任何 stage 文件依赖 harness 特有的隐式状态 (如 Claude 的 conversation memory)。所有关键决策**必须**落盘到 decision_log。
+**禁止**任何 stage 文件依赖 harness 特有的隐式状态 (如 Claude 的 conversation memory)。所有关键决策必须写入 `decision_log`，规则与逐题证据分别写入其专用合同并在日志中保留路径和摘要。
 
 ---
 
@@ -129,7 +131,7 @@ python <skill>/scripts/render_paper.py --workspace paper_workspace/
 
 ## 7. 验收 checklist (harness 适配是否做对)
 
-- [ ] 启动后，不论 harness，都先单独确认赛事与目标年份，再只加载对应竞赛包核验当届规则；规则状态确定后才收集其余启动字段
+- [ ] 启动后，不论 harness，都先单独确认赛事与目标年份，再由 `init_project.py` 创建一致状态，只加载对应竞赛包核验当届规则；规则状态确定后才收集其余启动字段
 - [ ] 所有"选 X" 决策点都呈现编号选项
 - [ ] decision_log.json schema 完全一致 (含 v6 兼容字段)
 - [ ] scripts/*.py 退出码与输出 JSON 一致

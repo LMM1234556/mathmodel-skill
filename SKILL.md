@@ -3,11 +3,11 @@ name: mathmodel-skill
 description: CUMCM 国赛、MCM/ICM 美赛、电工杯与“华为杯”中国研究生数学建模竞赛的端到端协作与质量控制工作流。Use when a user explicitly works on one of these contests or asks to run/review a modeling-competition project from problem interpretation through modeling, evidence-based figures, paper writing, compliance, and submission review. Provides per-question human approval, source-anchored interpretation, default-deny data isolation, comparable model candidates, persistent state, MATLAB figure evidence, and deterministic audits. Do not trigger for generic model selection, ordinary data analysis, or non-competition paper review.
 ---
 
-# mathmodel-skill — 数学建模四竞赛工作流 (v6.6)
+# mathmodel-skill — 数学建模四竞赛工作流 (v6.7)
 
 10 阶段把 72–100 小时的竞赛协作变成可恢复、可检查的流程。用户回答关键问题，agent 维护状态与脚本。每阶段产出经过 rubric 自评、定向精修与跨阶段一致性回检；Stage 8–9 先遵守当届官方规则，再做多视角终审。CUMCM 包含 91 份来源文档，其中 59 份进入文本统计；MCM/电工杯/华为杯经验统计明确为 `n=0`，不提供合成分位。
 
-**v6.6 更新**: 启动时先由参赛者确认赛事与年份，再建立逐类、逐来源的 `rules_snapshot.json`；`audit_ruleset.py` 分别在启动、写作和提交前失败关闭，禁止用“已核实”一句话掩盖未知项。华为杯 2025 规则仍只能作为参赛者明确批准的临时训练基线，不能通过最终提交门。
+**v6.7 更新**: Gate S0-A 在参赛者确认赛事与年份后调用 `init_project.py` 原子初始化工作区；脚本没有默认赛事/年份，拒绝覆盖已有状态，并让空白规则快照停在核验门前。保留 v6.6 的逐类规则快照与三阶段失败关闭审计。
 
 ---
 
@@ -27,7 +27,7 @@ Codex 优先按 skill 目录发现本文件:
 
 ## Harness 兼容 (Claude Code / Codex)
 
-本 skill v6.6 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
+本 skill v6.7 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
 
 | harness | 入口文件 | 用户交互工具 | 状态文件 |
 |---------|---------|-------------|---------|
@@ -74,9 +74,9 @@ Codex 优先按 skill 目录发现本文件:
 2. **Gate S0-A — 先识别赛事**。从用户消息或已有 state 获取 `competition` 与目标年份；缺失时只询问这两项。竞赛选项为 cumcm 国赛 / mcm 美赛 / diangong 电工杯 / huawei 华为杯研究生数模。不得默认选择 cumcm，也不得在赛事尚未确定时加载任一竞赛包或询问规则版本。
 
 3. 自动初始化 (agent 自动完成, 不要让用户编辑 json):
-   - 不存在 `<cwd>/state/decision_log.json` → 创建目录并复制 `<skill>/templates/shared/decision_log.json` 到该路径
-   - 立即写入 `decision_log.competition` 与 `problem_meta.year`
-   - 已存在 → 读 current_stage 字段决定恢复点
+   - 两个字段确认后运行 `python <skill>/scripts/init_project.py --workspace <cwd> --competition <comp> --year <year>`
+   - 脚本同时创建 `decision_log.json`、空白 `rules_snapshot.json` 与工作目录；不得省略参数或用环境默认值替代参赛者回答
+   - 已存在任一状态文件 → 脚本拒绝覆盖；读取现有 schema、competition 与 current_stage 决定恢复或迁移，不重新初始化
 
 4. **Gate S0-B — 再核验当届规则**。读取 `references/rule_verification_protocol.md`，只加载已选定的 `competitions/<comp>/current_rules.md`，打开官方链接核对目标年份并建立 `<cwd>/state/rules_snapshot.json`。逐类区分 `confirmed` / `unknown` / `not_applicable`，向参赛者展示缺项与冲突，再运行 `audit_ruleset.py --phase kickoff`。往届基线不是初始赛事选项，也不得自动启用。
 
