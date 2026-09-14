@@ -2,7 +2,7 @@
 
 > A structured Agent workflow for CUMCM, MCM/ICM, Diangong Cup, and the Huawei Cup graduate modeling contest — designed to keep a 72–100 hour project coherent from the first decision to the final submission.
 
-[![Version](https://img.shields.io/badge/version-v6.5.0-6f42c1)](./.codex-plugin/plugin.json)
+[![Version](https://img.shields.io/badge/version-v6.6.0-6f42c1)](./.codex-plugin/plugin.json)
 [![CI](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](./scripts/doctor.py)
 [![Competitions](https://img.shields.io/badge/CUMCM%20%7C%20MCM%2FICM%20%7C%20Diangong%20%7C%20Huawei-workflow-f97316)](./competitions/)
@@ -366,8 +366,9 @@ Codex 与 Claude Code 可以在同一目录中接力。`decision_log.json` 负�
 | `scripts/extract_diff.py`    | 生成并应用 section-level patch                        | `python <skill>/scripts/extract_diff.py --apply ...`         |
 | `scripts/render_paper.py`    | 将标准 Markdown 工作区装配为对应竞赛的 TeX/PDF        | `python <skill>/scripts/render_paper.py --competition cumcm --workspace paper_workspace` |
 | `scripts/render_ai_usage.py` | 根据台账生成 CUMCM/MCM AI 使用披露材料                | `python <skill>/scripts/render_ai_usage.py --competition mcm ...` |
+| `scripts/audit_ruleset.py`   | 审计官方规则来源、逐类状态、往届回退与终稿放行条件     | `python <skill>/scripts/audit_ruleset.py --phase final --decision-log state/decision_log.json` |
 | `scripts/audit_question_contracts.py` | 在计划、求解和定稿前审计逐题数据隔离与人工批准 | `python <skill>/scripts/audit_question_contracts.py --workspace . --phase execute --question Q1` |
-| `scripts/migrate_state.py`   | 将 v3.1/v3.2/v3.3 状态补齐到 v3.4，并先保存原文件备份 | `python <skill>/scripts/migrate_state.py state/decision_log.json` |
+| `scripts/migrate_state.py`   | 将 v3.1–v3.4 状态补齐到 v3.5，并先保存原文件备份      | `python <skill>/scripts/migrate_state.py state/decision_log.json` |
 | `scripts/ingest_papers.py`   | 供维护者离线更新经验统计                              | 见 [`scripts/README.md`](./scripts/README.md)                |
 
 完整 CLI 参数与依赖边界见 [`scripts/README.md`](./scripts/README.md)。
@@ -400,6 +401,16 @@ config/dim_weights.json          # 竞赛 × 题型 × 阶段的评分权重
 scripts/                         # 环境检查、评分、差分、装配、披露与维护工具
 tests/                           # 回归测试与 fixture
 ```
+
+## v6.6
+
+v6.6 把“核实规则”从一句流程描述升级为可追溯、可失败关闭的质量门。
+
+- 新增 `state/rules_snapshot.json` 合同：逐项记录参赛资格、赛程、题目下载、论文格式、匿名、文件、提交流程、AI、引用与原创性规则。
+- 每个已确认或不适用结论必须绑定官方来源；`unknown` 不能被解释为没有要求。
+- 新增 `audit_ruleset.py`，分别在 Stage 0、8、9 检查当届依据、来源、未知项、冲突、往届回退批准和状态一致性。
+- 最终提交只接受 `current_official`；往届临时基线即使准备阶段审计通过，也不能通过 final gate。
+- `decision_log.json` 升级至 v3.5，保存规则快照路径、核验状态、关键未知项、冲突和最近一次审计结果。
 
 ## v6.5
 

@@ -136,6 +136,7 @@ def run_checks(
         ".codex-plugin/plugin.json",
         "config/dim_weights.json",
         "templates/shared/decision_log.json",
+        "templates/shared/rules_snapshot.json",
         "templates/shared/problem_spec.md",
         "templates/shared/question_contract.json",
         "competitions/huawei/provisional_rules.json",
@@ -144,6 +145,7 @@ def run_checks(
         "templates/shared/matlab/mm_audit_figure.m",
         "templates/shared/matlab/mm_export_figure.m",
         "references/problem_understanding_protocol.md",
+        "references/rule_verification_protocol.md",
         "references/question_contract_protocol.md",
         "references/visualization_protocol.md",
         "references/paper_quality_protocol.md",
@@ -152,6 +154,7 @@ def run_checks(
         "scripts/render_paper.py",
         "scripts/render_ai_usage.py",
         "scripts/migrate_state.py",
+        "scripts/audit_ruleset.py",
         "scripts/audit_question_contracts.py",
         "templates/shared/ai_usage_ledger.json",
         "templates/latex/cumcm/main.tex",
@@ -178,6 +181,7 @@ def run_checks(
         SKILL_ROOT / ".codex-plugin" / "plugin.json",
         SKILL_ROOT / "config" / "dim_weights.json",
         SKILL_ROOT / "templates" / "shared" / "decision_log.json",
+        SKILL_ROOT / "templates" / "shared" / "rules_snapshot.json",
         SKILL_ROOT / "templates" / "shared" / "question_contract.json",
         SKILL_ROOT / "templates" / "shared" / "ai_usage_ledger.json",
         SKILL_ROOT / "competitions" / "huawei" / "provisional_rules.json",
@@ -206,7 +210,7 @@ def run_checks(
     decision = parsed.get(decision_path, {})
     decision_schema_ok = (
         isinstance(decision, dict)
-        and decision.get("_schema_version") == "3.4"
+        and decision.get("_schema_version") == "3.5"
         and isinstance(decision.get("stages"), dict)
         and isinstance(decision.get("scores"), dict)
         and isinstance(decision.get("iterations"), dict)
@@ -215,6 +219,11 @@ def run_checks(
         and "basis_year" in decision.get("compliance", {}).get("ruleset", {})
         and "basis_status" in decision.get("compliance", {}).get("ruleset", {})
         and "replacement_required" in decision.get("compliance", {}).get("ruleset", {})
+        and decision.get("compliance", {}).get("ruleset", {}).get("snapshot_path") == "state/rules_snapshot.json"
+        and "verification_status" in decision.get("compliance", {}).get("ruleset", {})
+        and isinstance(decision.get("compliance", {}).get("ruleset", {}).get("critical_unknowns"), list)
+        and isinstance(decision.get("compliance", {}).get("ruleset", {}).get("conflicts"), list)
+        and isinstance(decision.get("compliance", {}).get("ruleset", {}).get("last_audit"), dict)
         and "ai_usage" in decision.get("compliance", {})
         and isinstance(decision.get("stages", {}).get("2", {}).get("requirement_traceability"), list)
         and isinstance(decision.get("stages", {}).get("2", {}).get("question_contracts"), dict)
@@ -223,16 +232,44 @@ def run_checks(
         and decision.get("stages", {}).get("5", {}).get("question_contracts_dir") == "state/questions"
         and isinstance(decision.get("stages", {}).get("5", {}).get("question_contract_audits"), dict)
         and "claim_evidence_matrix_path" in decision.get("stages", {}).get("8", {})
+        and "rules_snapshot_audit_passed" in decision.get("stages", {}).get("8", {}).get("compliance", {})
         and "evidence_traceability_passed" in decision.get("stages", {}).get("9", {})
         and "figure_audit_passed" in decision.get("stages", {}).get("9", {})
+        and "rules_snapshot_audit_passed" in decision.get("stages", {}).get("9", {}).get("compliance_checks", {})
     )
     checks.append(_check(
         "decision-log-schema",
         decision_schema_ok,
-        "decision_log schema 3.4 with rule-basis, question contracts, traceability, and compliance state"
-        if decision_schema_ok else "decision_log template is not a complete v3.4 state",
-        "Restore the v3.4 decision-log template before using the workflow."
+        "decision_log schema 3.5 with audited rule snapshot, question contracts, traceability, and compliance state"
+        if decision_schema_ok else "decision_log template is not a complete v3.5 state",
+        "Restore the v3.5 decision-log template before using the workflow."
         if not decision_schema_ok else None,
+    ))
+
+    rules_template = parsed.get(
+        SKILL_ROOT / "templates" / "shared" / "rules_snapshot.json", {}
+    )
+    expected_rule_categories = {
+        "eligibility_and_team", "schedule", "problem_and_download",
+        "paper_format", "anonymity", "submission_files",
+        "submission_process", "ai_use", "citation_and_originality",
+    }
+    rules_template_ok = (
+        isinstance(rules_template, dict)
+        and rules_template.get("_schema_version") == "1.0"
+        and rules_template.get("competition") is None
+        and rules_template.get("competition_year") is None
+        and isinstance(rules_template.get("sources"), list)
+        and set(rules_template.get("categories", {})) == expected_rule_categories
+        and isinstance(rules_template.get("unresolved_items"), list)
+        and isinstance(rules_template.get("conflicts"), list)
+        and isinstance(rules_template.get("participant_decision"), dict)
+    )
+    checks.append(_check(
+        "rules-snapshot-schema",
+        rules_template_ok,
+        "rules_snapshot schema 1.0 covers nine source-backed rule categories"
+        if rules_template_ok else "rules_snapshot template is incomplete",
     ))
 
     question_template = parsed.get(
@@ -354,7 +391,7 @@ def run_checks(
             compliance = value.get("compliance") if isinstance(value, dict) else None
             valid = (
                 ok and isinstance(value, dict)
-                and value.get("_schema_version") == "3.4"
+                and value.get("_schema_version") == "3.5"
                 and "basis_status" in value.get("compliance", {}).get("ruleset", {})
                 and value.get("competition") == competition
                 and isinstance(value.get("current_stage"), int)

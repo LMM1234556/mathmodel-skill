@@ -25,6 +25,16 @@ python scripts/audit_question_contracts.py --workspace /path/to/project --phase 
 python scripts/audit_question_contracts.py --workspace /path/to/project --phase final --json
 ```
 
+### `audit_ruleset.py` — 当届规则快照审计
+
+检查赛事与年份、当前/往届依据、官方来源、九类关键规则、未知项、冲突和参赛者对临时回退的批准。`kickoff` 与 `writing` 可以保留明确 warning；`final` 要求当届官方规则完整且无阻断项。
+
+```bash
+python scripts/audit_ruleset.py --phase kickoff --decision-log state/decision_log.json
+python scripts/audit_ruleset.py --phase writing --decision-log state/decision_log.json
+python scripts/audit_ruleset.py --phase final --decision-log state/decision_log.json --json
+```
+
 ### `score_artifact.py` — L1 Critic 结果处理
 
 校验 critique JSON、计算实际 verdict，并把阶段分数与迭代记录写入项目的 `state/decision_log.json`。

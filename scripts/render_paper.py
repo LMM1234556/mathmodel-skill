@@ -1,5 +1,5 @@
 """
-render_paper.py — markdown 中间产物 → 最终 PDF (v3.4 四竞赛版)
+render_paper.py — markdown 中间产物 → 最终 PDF (v3.5 四竞赛版)
 
 功能:
 1. 读 stage 8 各节 markdown 产出 (<cwd>/paper_workspace/)

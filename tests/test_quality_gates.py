@@ -74,17 +74,23 @@ class QualityGatePackageTests(unittest.TestCase):
         self.assertLess(identify, verify)
         self.assertLess(verify, remaining)
 
-    def test_decision_log_v34_exposes_quality_gate_state(self) -> None:
+    def test_decision_log_v35_exposes_quality_gate_state(self) -> None:
         state = json.loads(
             (ROOT / "templates" / "shared" / "decision_log.json").read_text(
                 encoding="utf-8"
             )
         )
-        self.assertEqual(state["_schema_version"], "3.4")
+        self.assertEqual(state["_schema_version"], "3.5")
         self.assertIsNone(state["competition"])
         self.assertIn("basis_year", state["compliance"]["ruleset"])
         self.assertIn("basis_status", state["compliance"]["ruleset"])
         self.assertIn("replacement_required", state["compliance"]["ruleset"])
+        self.assertEqual(
+            state["compliance"]["ruleset"]["snapshot_path"],
+            "state/rules_snapshot.json",
+        )
+        self.assertIn("verification_status", state["compliance"]["ruleset"])
+        self.assertIn("last_audit", state["compliance"]["ruleset"])
         self.assertIn("requirement_traceability", state["stages"]["2"])
         self.assertIn("question_contracts", state["stages"]["2"])
         self.assertIn("interpretation_approval", state["stages"]["2"])
@@ -164,7 +170,7 @@ class MatlabFigurePipelineTests(unittest.TestCase):
 
 
 class StateMigrationTests(unittest.TestCase):
-    def test_v31_state_is_backed_up_and_merged_to_v34(self) -> None:
+    def test_v31_state_is_backed_up_and_merged_to_v35(self) -> None:
         template = json.loads(
             (ROOT / "templates" / "shared" / "decision_log.json").read_text(
                 encoding="utf-8"
@@ -185,7 +191,7 @@ class StateMigrationTests(unittest.TestCase):
             self.assertIsNotNone(backup)
             self.assertTrue(backup.is_file())
             migrated = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(migrated["_schema_version"], "3.4")
+            self.assertEqual(migrated["_schema_version"], "3.5")
             self.assertEqual(migrated["problem"], "A")
             self.assertEqual(migrated["stages"]["2"]["requirement_traceability"], [])
             self.assertEqual(migrated["stages"]["2"]["question_contracts"], {})
@@ -209,7 +215,7 @@ class StateMigrationTests(unittest.TestCase):
             backup = migrate_state.migrate(path)
             self.assertIsNotNone(backup)
             migrated = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(migrated["_schema_version"], "3.4")
+            self.assertEqual(migrated["_schema_version"], "3.5")
             self.assertEqual(migrated["stages"]["2"]["question_contracts"], {})
             self.assertEqual(
                 migrated["stages"]["3"]["question_contracts_plan_audit"]["status"],
@@ -236,11 +242,57 @@ class StateMigrationTests(unittest.TestCase):
             backup = migrate_state.migrate(path)
             self.assertIsNotNone(backup)
             migrated = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(migrated["_schema_version"], "3.4")
+            self.assertEqual(migrated["_schema_version"], "3.5")
             self.assertIsNone(migrated["compliance"]["ruleset"]["basis_year"])
             self.assertIsNone(migrated["compliance"]["ruleset"]["basis_status"])
             self.assertFalse(
                 migrated["compliance"]["ruleset"]["replacement_required"]
+            )
+
+    def test_v34_state_adds_rules_snapshot_audit_fields(self) -> None:
+        template = json.loads(
+            (ROOT / "templates" / "shared" / "decision_log.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        legacy = json.loads(json.dumps(template))
+        legacy["_schema_version"] = "3.4"
+        ruleset = legacy["compliance"]["ruleset"]
+        for key in (
+            "snapshot_path",
+            "verification_status",
+            "_verification_status_doc",
+            "critical_unknowns",
+            "conflicts",
+            "last_audit",
+        ):
+            ruleset.pop(key)
+        legacy["stages"]["8"]["compliance"].pop(
+            "rules_snapshot_audit_passed"
+        )
+        legacy["stages"]["9"]["compliance_checks"].pop(
+            "rules_snapshot_audit_passed"
+        )
+
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "decision_log.json"
+            path.write_text(json.dumps(legacy, ensure_ascii=False), encoding="utf-8")
+            backup = migrate_state.migrate(path)
+            self.assertIsNotNone(backup)
+            migrated = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(migrated["_schema_version"], "3.5")
+            self.assertEqual(
+                migrated["compliance"]["ruleset"]["snapshot_path"],
+                "state/rules_snapshot.json",
+            )
+            self.assertEqual(
+                migrated["compliance"]["ruleset"]["verification_status"],
+                "pending",
+            )
+            self.assertFalse(
+                migrated["stages"]["9"]["compliance_checks"][
+                    "rules_snapshot_audit_passed"
+                ]
             )
 
 

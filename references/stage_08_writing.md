@@ -9,6 +9,7 @@ outputs:
   - "paper_workspace/{claim_evidence_matrix.md,reverse_outline.md}"
   - "paper.tex"
 loads_reference:
+  - "references/rule_verification_protocol.md"
   - "competitions/<competition>/current_rules.md"
   - "competitions/huawei/provisional_rules.json (Huawei fallback only)"
   - "competitions/<competition>/winning_patterns.md"
@@ -17,6 +18,7 @@ loads_reference:
   - "references/paper_quality_protocol.md"
   - "references/visualization_protocol.md"
 loads_template:
+  - "templates/shared/rules_snapshot.json"
   - "competitions/<competition>/paper_skeleton.md"
   - "competitions/<competition>/abstract_template.md"
   - "templates/latex/<competition>/"
@@ -34,10 +36,11 @@ claim-evidence matrix. Before inserting figures, read
 
 ## 1. Lock the current rules first
 
-1. Read `competitions/<competition>/current_rules.md` when present.
-2. Open the linked official rules and confirm they are still current for the contest year.
-3. Record the target competition year, rule-basis year/status, replacement requirement, verification date, source URL, page/font/file-size limits, anonymity rules, and AI-disclosure requirements in `decision_log.compliance.ruleset`.
-4. If the repository baseline conflicts with the official source, follow the official source and flag the repository mismatch.
+1. Read `references/rule_verification_protocol.md` and the existing `state/rules_snapshot.json`.
+2. Re-open the linked official rules and confirm they are still current for the contest year; add newly published notices and files as distinct source IDs.
+3. Update every affected category, unresolved item, and conflict in the snapshot, then synchronize its summary to `decision_log.compliance.ruleset`.
+4. Run `audit_ruleset.py --phase writing --snapshot state/rules_snapshot.json --decision-log state/decision_log.json`. Any error blocks drafting; warnings remain visible in the paper plan.
+5. If the repository baseline conflicts with the official source, follow the official source and flag the repository mismatch.
 
 Do not treat empirical distributions, `winning_patterns.md`, or rubric scores as official rules. They are writing aids only.
 
@@ -154,7 +157,7 @@ Use the five Stage 8 dimensions from `competitions/<competition>/rubric_overlay.
 - `claim_evidence_matrix.md` and `reverse_outline.md` exist and have no unresolved high-severity gap;
 - every inserted figure is registered, reproducible, truthful to its source data, and readable at final size;
 - the paper agrees with the Stage 0–7 decision log;
-- the current official rules were rechecked and recorded;
+- the rules snapshot was rechecked and the writing-phase audit has no error;
 - AI uses and citations are logged;
 - the active competition's renderer includes every section;
 - L1 passes and the final L2 consistency check has no unresolved high-severity conflict.

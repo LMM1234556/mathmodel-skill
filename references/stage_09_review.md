@@ -6,6 +6,7 @@ inputs: ["paper.tex", "paper.pdf", "decision_log_full", "decision_log.competitio
 outputs:
   - "stage.9.{anti_patterns_check, compliance_checks, panel_scores, weakest_section, redo_log, red_team_record, final_pdf_path, submission_ready}"
 loads_reference:
+  - "references/rule_verification_protocol.md"
   - "competitions/<comp>/current_rules.md"
   - "competitions/huawei/provisional_rules.json (Huawei fallback only)"
   - "competitions/<comp>/anti_patterns.md"
@@ -25,7 +26,7 @@ The final gate is compliance first, content consistency second, presentation thi
 
 ## 1. Re-open the official rules
 
-Read `competitions/<comp>/current_rules.md`, open its official links, and compare the final artifacts against the current contest year. Record the check in `decision_log.stages.9.compliance_checks`.
+Read `references/rule_verification_protocol.md` and `competitions/<comp>/current_rules.md`, reopen the official links, and compare the final artifacts against the current contest year. Update `state/rules_snapshot.json`, synchronize the decision-log summary, and run `audit_ruleset.py --phase final --snapshot state/rules_snapshot.json --decision-log state/decision_log.json`. Any error forces `rules_snapshot_audit_passed=false` and `submission_ready=false` before the panel begins.
 
 Minimum branches:
 
@@ -157,6 +158,7 @@ Write actual runtime-derived counts and paths. The schema is:
   },
   "compliance_checks": {
     "rules_verified": null,
+    "rules_snapshot_audit_passed": null,
     "anonymity_passed": null,
     "page_limit_passed": null,
     "ai_disclosure_passed": null
@@ -172,7 +174,7 @@ The `null` values above are schema placeholders only. Replace every one with an 
 
 ## Exit conditions
 
-- current official rules verified with no unresolved violation;
+- current official rules verified and the final rules-snapshot audit passed with no unresolved violation;
 - anti-pattern and consistency checks completed;
 - requirement-to-deliverable and claim-to-evidence reverse traces passed;
 - every paper figure passed source, unit, encoding, caption, and final-size review;
