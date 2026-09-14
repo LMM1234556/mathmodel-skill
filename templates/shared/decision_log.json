@@ -1,6 +1,6 @@
 {
-  "_schema_version": "3.2",
-  "_doc": "跨阶段决策日志。每个阶段开头读、结尾写。L2 回检读此文件寻找跨阶段冲突。schema 与 stage_NN.md 实际写入字段一一对齐。v3.2 加入题意追踪、论点证据矩阵与图表审计状态。",
+  "_schema_version": "3.3",
+  "_doc": "跨阶段决策日志。每个阶段开头读、结尾写。L2 回检读此文件寻找跨阶段冲突。schema 与 stage_NN.md 实际写入字段一一对齐。v3.3 加入逐题 question contract、人工审批门、数据隔离和失效传播状态。",
   "competition": "cumcm",
   "task_type": null,
   "_competition_doc": "enum: cumcm | mcm | diangong | huawei (默认 cumcm 兼容老用户). 由 stage 0 kickoff 第一问填入。score_artifact.py / stage 文件按此字段 dispatch competitions/<comp>/* 加载。",
@@ -95,7 +95,14 @@
       "key_constraints": [],
       "objective_per_subproblem": {},
       "data_schema": {},
-      "subproblem_dependency": {}
+      "subproblem_dependency": {},
+      "question_contracts": {},
+      "interpretation_approval": {
+        "status": "pending",
+        "approved_by": null,
+        "approved_at": null,
+        "notes": ""
+      }
     },
     "3": {
       "_label": "model_selection",
@@ -104,7 +111,13 @@
       "rejection_log": [],
       "toy_demos_passed": false,
       "red_team": [],
-      "model_family_consistency": ""
+      "model_family_consistency": "",
+      "question_contracts_plan_audit": {
+        "status": "pending",
+        "checked_at": null,
+        "findings": []
+      },
+      "pre_execution_approvals": {}
     },
     "4": {
       "_label": "foundation",
@@ -125,8 +138,11 @@
       "refine_qis": [],
       "block_qis": [],
       "aggregate": null,
+      "question_contracts_dir": "state/questions",
+      "question_contract_audits": {},
       "sub_problems": {
         "_template": {
+          "question_contract_path": "",
           "model_name": "",
           "math_formulation_path": "",
           "code_path": "",
@@ -135,6 +151,16 @@
           "figure_registry_ids": [],
           "key_metrics": {},
           "physical_meaning_summary": "",
+          "approvals": {
+            "pre_execution": "pending",
+            "final_model": "pending",
+            "final_figures": "pending"
+          },
+          "contract_audits": {
+            "plan": "pending",
+            "execute": "pending",
+            "final": "pending"
+          },
           "scores": {},
           "issues": [],
           "iterations": 0

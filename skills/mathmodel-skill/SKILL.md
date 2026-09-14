@@ -1,6 +1,6 @@
 ---
 name: mathmodel-skill
-description: Plugin shim for the mathmodel-skill competition workflow. Use when Codex invokes this plugin for a CUMCM, MCM/ICM, Diangong Cup, or Huawei Cup graduate modeling-contest task, including problem interpretation, modeling, evidence-based figures, contest-paper writing, compliance, or final submission review. Do not use for generic data analysis or non-competition paper review.
+description: Plugin shim for the mathmodel-skill competition workflow. Use when Codex invokes this plugin for a CUMCM, MCM/ICM, Diangong Cup, or Huawei Cup graduate modeling-contest task, including per-question interpretation/data approval, candidate-model comparison, MATLAB figures, contest-paper writing, compliance, or final submission review. Do not use for generic data analysis or non-competition paper review.
 ---
 
 # mathmodel-skill plugin shim

@@ -2,7 +2,7 @@
 
 This pack targets the “华为杯”中国研究生数学建模竞赛, not the 电工杯.
 
-Status on 2026-09-02:
+Status on 2026-09-14:
 
 - the official invitation and schedule are verified in `current_rules.md`;
 - the 2026 paper standard, AI rules, and problems are not yet available in the

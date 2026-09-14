@@ -15,6 +15,16 @@ python scripts/doctor.py --competition diangong --require-renderer --require-mod
 python scripts/doctor.py --competition huawei --skip-tools
 ```
 
+### `audit_question_contracts.py` — 逐题合同审计
+
+检查每道子问题的题意、数据边界、依赖、模型候选、验证计划和图表计划，并在正式求解和定稿阶段要求人工批准。`execute` 阶段还校验数据文件与 SHA-256；`final` 阶段会阻断未声明/禁止输入、未通过验证或未批准的最终模型与图表。
+
+```bash
+python scripts/audit_question_contracts.py --workspace /path/to/project --phase plan
+python scripts/audit_question_contracts.py --workspace /path/to/project --phase execute --question Q1
+python scripts/audit_question_contracts.py --workspace /path/to/project --phase final --json
+```
+
 ### `score_artifact.py` — L1 Critic 结果处理
 
 校验 critique JSON、计算实际 verdict，并把阶段分数与迭代记录写入项目的 `state/decision_log.json`。

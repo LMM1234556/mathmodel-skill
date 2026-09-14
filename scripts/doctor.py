@@ -137,11 +137,13 @@ def run_checks(
         "config/dim_weights.json",
         "templates/shared/decision_log.json",
         "templates/shared/problem_spec.md",
+        "templates/shared/question_contract.json",
         "templates/shared/matlab/mm_style.m",
         "templates/shared/matlab/mm_choose_chart.m",
         "templates/shared/matlab/mm_audit_figure.m",
         "templates/shared/matlab/mm_export_figure.m",
         "references/problem_understanding_protocol.md",
+        "references/question_contract_protocol.md",
         "references/visualization_protocol.md",
         "references/paper_quality_protocol.md",
         "scripts/score_artifact.py",
@@ -149,6 +151,7 @@ def run_checks(
         "scripts/render_paper.py",
         "scripts/render_ai_usage.py",
         "scripts/migrate_state.py",
+        "scripts/audit_question_contracts.py",
         "templates/shared/ai_usage_ledger.json",
         "templates/latex/cumcm/main.tex",
         "templates/latex/mcm/main.tex",
@@ -174,6 +177,7 @@ def run_checks(
         SKILL_ROOT / ".codex-plugin" / "plugin.json",
         SKILL_ROOT / "config" / "dim_weights.json",
         SKILL_ROOT / "templates" / "shared" / "decision_log.json",
+        SKILL_ROOT / "templates" / "shared" / "question_contract.json",
         SKILL_ROOT / "templates" / "shared" / "ai_usage_ledger.json",
     ]
     for comp in COMPETITIONS:
@@ -200,7 +204,7 @@ def run_checks(
     decision = parsed.get(decision_path, {})
     decision_schema_ok = (
         isinstance(decision, dict)
-        and decision.get("_schema_version") == "3.2"
+        and decision.get("_schema_version") == "3.3"
         and isinstance(decision.get("stages"), dict)
         and isinstance(decision.get("scores"), dict)
         and isinstance(decision.get("iterations"), dict)
@@ -208,6 +212,11 @@ def run_checks(
         and isinstance(decision.get("compliance", {}).get("ruleset"), dict)
         and "ai_usage" in decision.get("compliance", {})
         and isinstance(decision.get("stages", {}).get("2", {}).get("requirement_traceability"), list)
+        and isinstance(decision.get("stages", {}).get("2", {}).get("question_contracts"), dict)
+        and isinstance(decision.get("stages", {}).get("2", {}).get("interpretation_approval"), dict)
+        and isinstance(decision.get("stages", {}).get("3", {}).get("question_contracts_plan_audit"), dict)
+        and decision.get("stages", {}).get("5", {}).get("question_contracts_dir") == "state/questions"
+        and isinstance(decision.get("stages", {}).get("5", {}).get("question_contract_audits"), dict)
         and "claim_evidence_matrix_path" in decision.get("stages", {}).get("8", {})
         and "evidence_traceability_passed" in decision.get("stages", {}).get("9", {})
         and "figure_audit_passed" in decision.get("stages", {}).get("9", {})
@@ -215,10 +224,32 @@ def run_checks(
     checks.append(_check(
         "decision-log-schema",
         decision_schema_ok,
-        "decision_log schema 3.2 with traceability and compliance state"
-        if decision_schema_ok else "decision_log template is not a complete v3.2 state",
-        "Restore the v3.2 decision-log template before using the workflow."
+        "decision_log schema 3.3 with question contracts, traceability, and compliance state"
+        if decision_schema_ok else "decision_log template is not a complete v3.3 state",
+        "Restore the v3.3 decision-log template before using the workflow."
         if not decision_schema_ok else None,
+    ))
+
+    question_template = parsed.get(
+        SKILL_ROOT / "templates" / "shared" / "question_contract.json", {}
+    )
+    question_template_ok = (
+        isinstance(question_template, dict)
+        and question_template.get("_schema_version") == "1.0"
+        and isinstance(question_template.get("source"), dict)
+        and isinstance(question_template.get("dependencies"), dict)
+        and isinstance(question_template.get("data_contract"), dict)
+        and isinstance(question_template.get("model_plan"), dict)
+        and isinstance(question_template.get("figure_plan"), dict)
+        and isinstance(question_template.get("approvals"), dict)
+        and isinstance(question_template.get("execution"), dict)
+        and isinstance(question_template.get("invalidation"), dict)
+    )
+    checks.append(_check(
+        "question-contract-schema",
+        question_template_ok,
+        "question_contract schema 1.0 with data, model, figure, approval, and invalidation state"
+        if question_template_ok else "question_contract template is incomplete",
     ))
 
     comp_dir = SKILL_ROOT / "competitions" / competition
@@ -291,7 +322,7 @@ def run_checks(
             compliance = value.get("compliance") if isinstance(value, dict) else None
             valid = (
                 ok and isinstance(value, dict)
-                and value.get("_schema_version") == "3.2"
+                and value.get("_schema_version") == "3.3"
                 and value.get("competition") == competition
                 and isinstance(value.get("current_stage"), int)
                 and not isinstance(value.get("current_stage"), bool)
@@ -306,6 +337,9 @@ def run_checks(
                     value.get("stages", {}).get("2", {}).get("requirement_traceability"),
                     list,
                 )
+                and isinstance(value.get("stages", {}).get("2", {}).get("question_contracts"), dict)
+                and isinstance(value.get("stages", {}).get("3", {}).get("question_contracts_plan_audit"), dict)
+                and value.get("stages", {}).get("5", {}).get("question_contracts_dir") == "state/questions"
                 and value.get("stages", {}).get("5", {}).get("figure_policy", {}).get(
                     "final_quantitative_renderer"
                 ) == "MATLAB"

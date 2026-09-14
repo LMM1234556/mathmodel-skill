@@ -742,7 +742,7 @@ class DoctorTests(unittest.TestCase):
         self.assertEqual(marker_check.status, "pass")
         self.assertEqual(marker_check.detail, "huawei: 10/10 section markers")
 
-    def test_workspace_state_requires_v32_and_matching_competition(self) -> None:
+    def test_workspace_state_requires_v33_and_matching_competition(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
             state_path = workspace / "state" / "decision_log.json"

@@ -2,7 +2,7 @@
 
 > A structured Agent workflow for CUMCM, MCM/ICM, Diangong Cup, and the Huawei Cup graduate modeling contest — designed to keep a 72–100 hour project coherent from the first decision to the final submission.
 
-[![Version](https://img.shields.io/badge/version-v6.3.0-6f42c1)](./.codex-plugin/plugin.json)
+[![Version](https://img.shields.io/badge/version-v6.4.0-6f42c1)](./.codex-plugin/plugin.json)
 [![CI](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](./scripts/doctor.py)
 [![Competitions](https://img.shields.io/badge/CUMCM%20%7C%20MCM%2FICM%20%7C%20Diangong%20%7C%20Huawei-workflow-f97316)](./competitions/)
@@ -14,7 +14,7 @@
 
 mathmodel-skill 为这些问题而设计。
 
-它不是一个试图一次生成整篇论文的 Prompt，也不是一个替团队做决定的黑盒 Agent。它是一套可执行的建模工作流：将选题、拆题、模型选择、求解、稳健性分析、论文装配和终审组织为 10 个阶段，并用一份共享决策日志保存整个项目的状态。
+它不是一个试图一次生成整篇论文的 Prompt，也不是一个替团队做决定的黑盒 Agent。它是一套可执行的建模工作流：将选题、拆题、模型选择、求解、稳健性分析、论文装配和终审组织为 10 个阶段，并为每道子问题维护独立的数据、模型、验证与图表合同。关键决策由参赛者批准，一份共享决策日志保存整个项目的全局状态。
 
 当比赛持续数十小时、队员交替协作，或者工作从 Codex 切换到 Claude Code 时，项目仍然能够沿着同一条主线继续，而不是重新依赖聊天上下文和个人记忆。
 
@@ -103,6 +103,9 @@ flowchart LR
 | 封面或摘要仍含占位符，却被误当作正式稿       | 正式渲染采用 fail-closed 检查；占位符只能用于显式 dry-run    |
 | 临近提交才发现页数、匿名或 AI 披露问题       | Stage 0、8、9 会重新打开规则入口；未通过合规门不能进入 `submission_ready` |
 | 题目复述流畅，但漏掉限定词、单位或交付物     | Stage 2 保存原文锚点和 SHA-256，独立复读后逐条消解冲突；高影响歧义直接阻断 |
+| Q2 误用了 Q1 的数据、字段或筛选范围          | 每个 Qi 使用独立 `question_contract`；未声明输入默认禁止，实际输入与合同不一致时审计失败 |
+| Codex 未经讨论就确定模型并开始求解           | 每个 Qi 先比较有效基线和合理候选，再由参赛者批准题意、数据、验证和初步图表计划 |
+| 模型跑完后只保留 AI 自选的“最佳方案”         | 同条件比较候选，记录失败场景；最终模型和正式 MATLAB 图表分别需要团队批准 |
 | 图表像默认软件输出，或鲜艳但不能支持结论     | 定量图统一用 MATLAB；每张图绑定 Claim、源结果、`.m` 脚本、选图理由和 caption，并在最终尺寸审查 |
 | 论文像模型说明书，摘要数字又找不到正文依据   | 先建 Claim—Evidence 矩阵和结果卡，再写正文；Stage 9 从摘要反查到结果文件 |
 | Pandoc、TeX 或依赖问题直到最后才暴露         | `doctor.py` 集中检查结构、竞赛包、Python、Pandoc、TeX 与可选依赖 |
@@ -226,7 +229,7 @@ YAML/JSON、竞赛包、反模式计数、评分边界、模板 marker、渲染 
 | **电工杯**       | 中文；XeLaTeX / `ctexart`                   | 12 项工程导向检查；已记录官网页序、25 页正文、支撑材料与匿名基线 | 经验层 `n=0`；当前官网未提供专门 AI 格式，仍需检查当届通知  |
 | **华为杯研究生数模** | 中文；2026 官方标准文档待发布/获取          | 已核对 100 小时赛程、MD5 与 PDF 分段提交；12 项内部反模式检查 | 经验层 `n=0`；仓库 LaTeX 仅内部评阅，不能作为提交件 |
 
-截至 2026-09-02，仓库已核对：
+截至 2026-09-14，仓库已核对：
 
 - [CUMCM 2026 竞赛规则](https://www.mcm.edu.cn/html_cn/node/9d8e511fe7a1447b35f53a82c908e2e0.html)
 - [CUMCM 2026 论文格式规范](https://www.mcm.edu.cn/html_cn/node/4cd596519c9eb9fbd866398f6df0caa3.html)
@@ -234,6 +237,7 @@ YAML/JSON、竞赛包、反模式计数、评分边界、模板 marker、渲染 
 - [电工杯参赛规则](https://shumo.neepu.edu.cn/jszz/csgz.htm)
 - [电工杯论文规范](https://shumo.neepu.edu.cn/jszz/lwgf.htm)
 - [2026 华为杯中国研究生数学建模竞赛参赛邀请函](https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c9080189dcfa24e019dddacc24a1314?page=0)
+- [华为杯官方通知列表](https://cpipc.acge.org.cn/cw/contestNews/list/4/1)
 
 这些链接构成仓库当前的规则基线，但不能替代参赛当年的官方文件。
 
@@ -332,7 +336,8 @@ my-modeling-project/
 ├── state/
 │   ├── decision_log.json       # 决策、评分、回退、规则与 AI 使用台账
 │   ├── problem_spec.md         # 原文锚点、原子要求、歧义与数学对象映射
-│   └── interpretation_review.md # 独立复读与冲突消解
+│   ├── interpretation_review.md # 独立复读与冲突消解
+│   └── questions/Qi/question_contract.json # 每道题的数据、模型、验证、图表与批准状态
 ├── results/                    # 结构化结果与可复现实验输出
 ├── figures/                    # 最终图表、sidecar 与 figure_registry.json
 ├── paper_workspace/            # 论点证据矩阵、反向提纲、正文分节与披露片段
@@ -351,7 +356,8 @@ Codex 与 Claude Code 可以在同一目录中接力。`decision_log.json` 负�
 | `scripts/extract_diff.py`    | 生成并应用 section-level patch                        | `python <skill>/scripts/extract_diff.py --apply ...`         |
 | `scripts/render_paper.py`    | 将标准 Markdown 工作区装配为对应竞赛的 TeX/PDF        | `python <skill>/scripts/render_paper.py --competition cumcm --workspace paper_workspace` |
 | `scripts/render_ai_usage.py` | 根据台账生成 CUMCM/MCM AI 使用披露材料                | `python <skill>/scripts/render_ai_usage.py --competition mcm ...` |
-| `scripts/migrate_state.py`   | 将 v3.1 状态补齐到 v3.2，并先保存原文件备份            | `python <skill>/scripts/migrate_state.py state/decision_log.json` |
+| `scripts/audit_question_contracts.py` | 在计划、求解和定稿前审计逐题数据隔离与人工批准 | `python <skill>/scripts/audit_question_contracts.py --workspace . --phase execute --question Q1` |
+| `scripts/migrate_state.py`   | 将 v3.1/v3.2 状态补齐到 v3.3，并先保存原文件备份       | `python <skill>/scripts/migrate_state.py state/decision_log.json` |
 | `scripts/ingest_papers.py`   | 供维护者离线更新经验统计                              | 见 [`scripts/README.md`](./scripts/README.md)                |
 
 完整 CLI 参数与依赖边界见 [`scripts/README.md`](./scripts/README.md)。
@@ -374,6 +380,7 @@ references/
   feedback_layer1_* ... layer4_* # 阶段评分、回检、Panel 与校准
   model_catalog.md               # 模型候选目录
   problem_understanding_protocol.md # 题面原文追踪与独立复读
+  question_contract_protocol.md # 逐题数据隔离、模型/图表计划与人工批准门
   visualization_protocol.md      # 图表选择、证据登记与最终尺寸质检
   paper_quality_protocol.md       # Claim—Evidence 写作与反向审计
 templates/
@@ -383,6 +390,16 @@ config/dim_weights.json          # 竞赛 × 题型 × 阶段的评分权重
 scripts/                         # 环境检查、评分、差分、装配、披露与维护工具
 tests/                           # 回归测试与 fixture
 ```
+
+## v6.4
+
+v6.4 保留完整 10 阶段流程，但把最容易出错的 Stage 2、3、5 改为“全局流程 + 逐题受控循环”。
+
+- Stage 2 为每个 Qi 建立独立 question contract，分别记录原文理解、交付物、数据文件/表/字段/范围、禁止输入和上下游 result IDs；不同子问不再默认共享数据上下文。
+- Stage 3 为每个 Qi 比较有效基线和合理候选，预先登记统一验证方案和初步图表计划；参赛者明确批准后才允许正式求解。
+- Stage 5 在同一数据与验证条件下比较候选，最终模型和最终 MATLAB 图表分别再次由团队确认；合同变化使原批准失效并向下游传播 stale 状态。
+- 新增 `audit_question_contracts.py`，在 plan、execute、final 三个阶段检查合同完整性、数据哈希、未声明输入、依赖环、验证结果和批准状态。
+- `decision_log.json` 升级为 v3.3；v3.1 和 v3.2 状态可以保留备份后迁移。
 
 ## v6.3
 

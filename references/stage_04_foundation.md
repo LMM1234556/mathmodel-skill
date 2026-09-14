@@ -3,11 +3,11 @@ stage: 4
 name: foundation
 duration_h: 1
 inputs:
-  - "stage.2.key_variables"
-  - "stage.3.selected_per_subproblem"
+  - "stage.2.{key_variables, question_contracts}"
+  - "stage.3.{selected_per_subproblem, pre_execution_approvals}"
 outputs:
   - "stage.4.{assumptions, symbols, terminology, consistency_check}"
-loads_reference: ["references/rubrics.md§Stage_4", "competitions/<comp>/anti_patterns.md§B"]
+loads_reference: ["references/question_contract_protocol.md", "references/rubrics.md§Stage_4", "competitions/<comp>/anti_patterns.md§B"]
 loads_template: ["templates/shared/assumption_table.md", "templates/shared/notation_table.md"]
 feedback: ["L1"]
 next: stage_05_subproblem_loop
@@ -27,8 +27,8 @@ next: stage_05_subproblem_loop
 
 ## 输入
 
-- stage 2 全局变量表
-- stage 3 选定模型 (隐含一些假设)
+- stage 2 全局变量表与逐题数据/依赖合同
+- stage 3 候选模型与预执行批准 (隐含一些假设)
 
 ## 产出
 
@@ -105,8 +105,11 @@ A1: <模型实际依赖的假设>
 回扫 stage 2-3 的所有产出,对照本文:
 - 任何 stage 2 提到的变量,本文表中都有?
 - stage 3 选模型时提到的 "假设 ABC",本文都列了?
+- 每个符号的数据来源、单位和范围是否仍符合对应 Qi 的 question contract?
 
 如有不一致 → 立即修正,不要拖到 stage 5 才发现。
+
+如果新增假设会改变已批准的题意、数据边界、目标、硬约束或验证计划，不得只更新假设表。按 `question_contract_protocol.md` 使受影响 contract 失效，更新后重新取得 pre-execution approval。
 
 ### Step 6: 输出 (5 min)
 
@@ -153,8 +156,9 @@ A1: <模型实际依赖的假设>
 1. 所有必要假设都有证据，或标记 provisional 且已有验证/回退计划
 2. 符号表覆盖后续实际使用的全部符号，全有单位与类型且无凑数项
 3. 正文实际使用且可能歧义的术语均已定义 (若适用)
-4. 一致性预检通过
-5. L1 全维 ≥7
+4. 一致性预检通过，且没有用新增假设绕过已批准的数据/模型合同
+5. 如基础定义改变 question contract，受影响 Qi 已重新确认
+6. L1 全维 ≥7
 
 → 跳转 `stage_05_subproblem_loop.md`
 

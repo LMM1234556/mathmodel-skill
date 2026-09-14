@@ -1,7 +1,7 @@
 {
   "name": "mathmodel-skill",
-  "version": "6.3.0",
-  "description": "A stateful ten-stage workflow with source-anchored problem interpretation, evidence-based MATLAB figures, paper traceability, and compliance review for CUMCM, MCM/ICM, Diangong Cup, and Huawei Cup graduate modeling.",
+  "version": "6.4.0",
+  "description": "A stateful ten-stage workflow with per-question human approval, data isolation, candidate-model comparison, evidence-based MATLAB figures, paper traceability, and compliance review for CUMCM, MCM/ICM, Diangong Cup, and Huawei Cup graduate modeling.",
   "author": {
     "name": "handsomeZR-netizen",
     "url": "https://github.com/handsomeZR-netizen"
@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "MathModel｜数学建模工作流",
     "shortDescription": "让四类数学建模竞赛从题意到终稿形成可核验链路",
-    "longDescription": "A Codex-native mathematical modeling competition workflow that traces problem requirements to models and deliverables, registers figures as reproducible evidence, and traces paper claims back to validated results. Ten staged checkpoints, persistent state, competition-specific rules, deterministic helpers, and compliance-first review keep long-running collaboration coherent.",
+    "longDescription": "A Codex-native mathematical modeling competition workflow that isolates every subproblem's interpretation, data, candidate models, validation, and figures behind human approval gates. Ten staged checkpoints, persistent state, deterministic audits, MATLAB evidence figures, paper traceability, and compliance-first review keep long-running collaboration coherent.",
     "developerName": "handsomeZR-netizen",
     "category": "Education",
     "capabilities": [

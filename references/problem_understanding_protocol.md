@@ -14,7 +14,10 @@ Create under the user project:
 - `state/problem_source_manifest.json`, containing the source path, file SHA-256,
   extraction time, page count when observable, and attachment paths;
 - `state/interpretation_review.md`, containing the independent second read and
-  reconciliation record.
+  reconciliation record;
+- `state/questions/<Qi>/question_contract.json`, initialized from
+  `<skill>/templates/shared/question_contract.json` for every subproblem and
+  completed according to `references/question_contract_protocol.md`.
 
 The source hash identifies the problem version; it does not prove that the file
 is official. Record the download page or official source separately when known.
@@ -92,6 +95,9 @@ Stage 2 cannot pass unless:
 - every model objective and hard constraint points back to a requirement ID;
 - every attachment field used by the model has a unit and meaning;
 - the independent read has been reconciled;
+- every Qi has its own data boundary and upstream dependency/independence record;
+- the team has explicitly approved each Qi interpretation, deliverable, data
+  boundary, and dependency before model selection;
 - no unresolved ambiguity can materially change the model family, constraint
   set, evaluation metric, or final deliverable.
 

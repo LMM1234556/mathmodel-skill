@@ -1,0 +1,80 @@
+{
+  "_schema_version": "1.0",
+  "_doc": "每个子问题一份。agent 维护 JSON，并向参赛者展示可读执行卡；参赛者不手工编辑。",
+  "question_id": "Q1",
+  "status": "draft",
+  "source": {
+    "requirement_ids": [],
+    "source_anchors": [],
+    "team_interpretation": "",
+    "deliverables": [],
+    "ambiguities": []
+  },
+  "dependencies": {
+    "upstream_results": [],
+    "independence_rationale": "",
+    "forbidden_inputs": []
+  },
+  "data_contract": {
+    "datasets": [],
+    "no_data_reason": "",
+    "observed_accesses": []
+  },
+  "model_plan": {
+    "candidates": [],
+    "single_candidate_justification": "",
+    "recommended_candidate_id": null,
+    "selection_criteria": [],
+    "validation_plan": {
+      "metrics": [],
+      "split_or_scenarios": "",
+      "baseline_candidate_id": null,
+      "failure_conditions": []
+    }
+  },
+  "figure_plan": {
+    "evidence_questions": [],
+    "candidate_chart_types": [],
+    "preliminary_recommendation": null,
+    "no_figure_reason": "",
+    "final_chart_types": [],
+    "rationale": "",
+    "result_ids": []
+  },
+  "approvals": {
+    "pre_execution": {
+      "status": "pending",
+      "approved_by": null,
+      "approved_at": null,
+      "contract_digest": null,
+      "notes": ""
+    },
+    "final_model": {
+      "status": "pending",
+      "approved_by": null,
+      "approved_at": null,
+      "contract_digest": null,
+      "notes": ""
+    },
+    "final_figures": {
+      "status": "pending",
+      "approved_by": null,
+      "approved_at": null,
+      "contract_digest": null,
+      "notes": ""
+    }
+  },
+  "execution": {
+    "chosen_model_id": null,
+    "code_paths": [],
+    "result_ids": [],
+    "observed_upstream_result_ids": [],
+    "validation_status": "pending"
+  },
+  "invalidation": {
+    "status": "current",
+    "reason": null,
+    "invalidated_at": null,
+    "downstream_questions": []
+  }
+}

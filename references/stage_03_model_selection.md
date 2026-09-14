@@ -3,11 +3,12 @@ stage: 3
 name: model_selection
 duration_h: 2-3
 inputs:
-  - "stage.2.{decomposition, objective_per_subproblem, data_schema}"
+  - "stage.2.{decomposition, objective_per_subproblem, data_schema, question_contracts, interpretation_approval}"
 outputs:
-  - "stage.3.{candidate_models, selected_per_subproblem, rejection_log, toy_demos_passed, red_team, model_family_consistency}"
+  - "stage.3.{candidate_models, selected_per_subproblem, rejection_log, toy_demos_passed, red_team, model_family_consistency, question_contracts_plan_audit, pre_execution_approvals}"
 loads_reference:
   - "references/model_catalog.md"
+  - "references/question_contract_protocol.md"
   - "references/rubrics.md§Stage_3"
   - "competitions/<comp>/winning_patterns.md§4"
 loads_template: ["templates/shared/code_starter/<problem_type>.py"]
@@ -23,19 +24,22 @@ next: stage_04_foundation
 
 ## 目标
 
-为每个子问题选定一个证据最充分的主模型，并记录所有真实可行的替代模型及否决依据。候选数量由问题结构和证据决定；若检索后没有合理替代，记录检索范围与原因，不用不适配模型凑数。模型名称必须准确反映实际实现，跨子问题接口必须可解释。
+为每个子问题建立一个可比较的候选集、有效基线和预执行推荐，并在正式求解前让参赛者确认数据、模型、验证与初步图表计划。Stage 3 的选择是待实证检验的推荐，不是最终“最优模型”；最终模型在 Stage 5 使用同一任务、数据和验证方案比较后再次确认。候选数量由问题结构和证据决定；若检索后没有合理替代，记录检索范围与原因，不用不适配模型凑数。
 
 ---
 
 ## 输入
 
-- stage 2 输出: 子问题卡片 + 目标函数雏形 + 数据 schema
+- stage 2 输出: 子问题卡片 + 目标函数雏形 + 数据 schema + 每个 Qi 的 question contract
+- stage 2 的逐题理解、数据边界和依赖已经参赛者批准
 - `references/model_catalog.md` 必读
 
 ## 产出
 
-- 每个 Qi 的主模型 + 准确名称 + 选型理由
+- 每个 Qi 的有效基线、合理候选、预执行推荐 + 准确名称 + 选型理由
 - 每个 Qi 的合理替代候选 + 否决理由；没有合理替代时记录检索证据
+- 每个 Qi 的验证计划、失败条件、证据问题与初步图表候选
+- 每个 Qi 的预执行人工批准和 question-contract plan audit
 - 覆盖关键失败模式的最小可执行 demo (Python)
 - (championship) red-team 攻击与回应
 
@@ -81,7 +85,9 @@ Qi 候选 <ID>: <模型与模型族>
 | 5. 文献或理论支持 | 0.10 | `<score>` | `...` | `<score>` |
 | **加权** | | `<weighted>` | `...` | `<weighted>` |
 
-→ 选择证据最充分且在时间预算内可验证的候选；分数不能替代否决证据。
+→ 推荐证据最充分且在时间预算内可验证的候选；分数不能替代否决证据，也不能把“推荐”写成已经证明的最优模型。
+
+每个 Qi 至少保留一个满足同一目标和硬约束的有效基线。若没有通常意义上的简单基线，说明为什么，并设计最低复杂度的有效对照。模型比较必须预先固定共同数据合同、指标/目标、约束和验证切分，避免只给复杂模型更有利的条件。
 
 ### Step 4: 可核验命名 (15 min)
 
@@ -91,11 +97,30 @@ Qi 候选 <ID>: <模型与模型族>
 
 若只实现标准模型，就使用标准名称。不得为了显得创新添加“改进”“自适应”“多层”等修饰词；声称复合、松弛或动态机制时，必须能指向对应公式、代码与消融/基线证据。
 
-最终名称与证据位置写入 `decision_log.stages.3.selected_per_subproblem.<Qi>`。
+预执行推荐名称与证据位置写入 `decision_log.stages.3.selected_per_subproblem.<Qi>`；Stage 5 的最终选择可以不同，但必须保留变更理由和新的团队批准。
+
+### Step 4B: 完成逐题执行卡并获取批准
+
+把候选与决策矩阵写入各 Qi 的 `question_contract.json`：
+
+- `model_plan.candidates`：有效基线、主流方案、进阶方案中真正可比较的候选；
+- `recommended_candidate_id` 与 `selection_criteria`；
+- `validation_plan`：共同指标、切分/情景、基线 ID 和失败条件；
+- `figure_plan`：需要回答的证据问题、候选图形和初步推荐；如果本 Qi 不需要图，填写 `no_figure_reason`，不得为凑图强制可视化。
+
+先由 agent 自动运行：
+
+```bash
+python <skill>/scripts/audit_question_contracts.py --workspace <cwd> --phase plan
+```
+
+任何 error 都是 high issue 并 `block`。审计通过后，向参赛者展示完整执行卡：题意、交付物、数据文件/字段/范围、禁止输入、上下游依赖、候选模型、推荐理由、验证方式、失败条件和初步图表。参赛者批准后填写 `approvals.pre_execution` 的状态、确认人、时间和由审计脚本生成的 `contract_digest`。沉默、继续聊天或只批准模型名称都不算完整批准。
+
+如果参赛者要求修改，更新 contract、重新运行 plan audit，再次展示变化后的执行卡。在 plan audit 和预执行批准均通过前，不得运行正式求解器或写正式结论。
 
 ### Step 5: Toy Demo 验证 (45 min)
 
-为每个 Qi 写最小可执行 demo。规模应足以覆盖关键约束、数据接口和已知失败模式：优先从真实数据构造代表性切片；若真实数据尚不可用，使用明确标注的合成 sanity case。不要用固定行数、固定抽样比例或固定秒数代替可行性证据:
+在本 Qi 的预执行批准后写最小可执行 demo。规模应足以覆盖关键约束、已批准的数据接口和已知失败模式：优先从真实数据构造代表性切片；若真实数据尚不可用，使用明确标注的合成 sanity case。不要用固定行数、固定抽样比例或固定秒数代替可行性证据。Toy demo 不是正式结果，不得进入论文证据注册表：
 
 ```python
 # Qi feasibility demo - 用项目中的实际构造器保持接口一致
@@ -114,7 +139,7 @@ record_runtime_and_scale(result, case)
 - 运行时间不超过该候选在实际 deadline 下的可用预算
 - 结果数量级通过题面边界或独立基线校验
 
-不通过 → 候选无效,回 Step 2 换。
+不通过 → 候选无效，回 Step 2 修改 contract。候选、数据切片、验证方案或推荐发生变化时，原 `pre_execution` 批准失效，重置为 `pending` 并重新展示执行卡；不得沿用旧批准。
 
 ### Step 6: 跨子问题模型族协调 (10 min)
 
@@ -151,7 +176,9 @@ record_runtime_and_scale(result, case)
   "rejection_log": [...],
   "toy_demos_passed": true,
   "red_team": [...],
-  "model_family_consistency": "..."
+  "model_family_consistency": "...",
+  "question_contracts_plan_audit": {"status": "passed", "checked_at": "...", "findings": []},
+  "pre_execution_approvals": {"<Qi>": {"status": "approved", "approved_by": "...", "approved_at": "..."}}
 }
 ```
 
@@ -179,10 +206,12 @@ championship 额外: red_team 覆盖所有能改变结论的实质攻击，每�
 
 ## 退出条件
 
-1. 每 Qi 选型完成 + 名称与实现一致
+1. 每 Qi 有有效基线、可比较候选和预执行推荐；名称与计划实现一致
 2. 每 Qi 的合理替代已评估；若无替代，检索范围与理由已记录
-3. toy demo 通过
-4. (championship) 所有实质 red-team 攻击均有证据回应或明确的未解决风险
-5. L1 全维 ≥7
+3. 每 Qi 已固定共同验证条件和初步图表计划，或有不作图的正当理由
+4. 每 Qi 的完整执行卡已获参赛者明确批准，question-contract plan audit 通过
+5. toy demo 通过；若它改变合同，已经重新批准
+6. (championship) 所有实质 red-team 攻击均有证据回应或明确的未解决风险
+7. L1 全维 ≥7
 
 → 跳转 `stage_04_foundation.md`

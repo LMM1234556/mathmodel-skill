@@ -7,12 +7,13 @@ inputs:
   - "problem_pdf"
   - "attachment_data_paths"
 outputs:
-  - "stage.2.{problem_source, requirement_traceability, interpretation_review, ambiguities, decomposition, key_variables, key_constraints, objective_per_subproblem, data_schema, subproblem_dependency}"
-  - "state/{problem_spec.md,problem_source_manifest.json,interpretation_review.md}"
+  - "stage.2.{problem_source, requirement_traceability, interpretation_review, ambiguities, decomposition, key_variables, key_constraints, objective_per_subproblem, data_schema, subproblem_dependency, question_contracts, interpretation_approval}"
+  - "state/{problem_spec.md,problem_source_manifest.json,interpretation_review.md,questions/<Qi>/question_contract.json}"
 loads_reference:
   - "references/problem_understanding_protocol.md"
+  - "references/question_contract_protocol.md"
   - "references/rubrics.md§Stage_2"
-loads_template: ["templates/shared/problem_spec.md"]
+loads_template: ["templates/shared/problem_spec.md", "templates/shared/question_contract.json"]
 feedback: ["L1"]
 next: stage_03_model_selection
 ---
@@ -44,6 +45,8 @@ next: stage_03_model_selection
 - 数据 schema 与变量映射
 - 题面来源清单、SHA-256 与原子要求追踪矩阵
 - 一次独立复读及冲突消解记录
+- 每个 Qi 的独立 question contract 草稿，锁定题意、数据边界与依赖关系
+- 参赛者对逐题理解和数据边界的显式确认
 
 ---
 
@@ -154,6 +157,21 @@ print(df.isnull().sum())
 
 写入 `decision_log.stages.2.decomposition`。
 
+### Step 5B: 建立逐题数据合同与依赖边界
+
+读取 `references/question_contract_protocol.md`。为每个 Qi 复制
+`templates/shared/question_contract.json` 到
+`state/questions/<Qi>/question_contract.json`，先填写以下部分：
+
+- `source.requirement_ids`、`source_anchors`、`team_interpretation` 与 `deliverables`；
+- `dependencies.upstream_results` 或 `independence_rationale`；
+- `dependencies.forbidden_inputs`；
+- `data_contract.datasets` 或 `no_data_reason`。
+
+每个数据集不能只写“附件 1”，必须写明文件、SHA-256、工作表/表、字段名称与含义、单位、行范围、筛选条件、预处理、排除项和用途。即使两个 Qi 使用同一附件，也分别声明它们实际允许读取的字段和样本范围。
+
+此时模型与图表部分保持待填写，不能伪造候选或批准状态。Stage 3 会完成这些字段并运行 plan audit。
+
 ### Step 6: 目标函数雏形 (30 min)
 
 每个 Qi 写出符号化目标 (不必完整,要框架):
@@ -171,6 +189,19 @@ Qi: <与该子问题匹配的符号化目标>
 
 每个目标、硬约束和最终输出必须标注对应 Requirement ID。若一个数学对象找不到题面要求或已记录假设作为来源，先删除或回到题意审查，而不是让模型自行补全题目。
 
+### Step 6B: 参赛者逐题确认
+
+在进入模型选择前，用可读表格一次展示每个 Qi 的：
+
+1. 原文锚点与 Codex 的理解；
+2. 预期输出、单位与交付物；
+3. 数据文件、工作表、字段、范围、筛选和禁止输入；
+4. 上游结果依赖或独立理由；
+5. 尚未解决的歧义。
+
+让参赛者批准或逐项修改。不得把“用户没有反对”记为批准。批准写入
+`decision_log.stages.2.interpretation_approval`；任何会改变 Qi 目标、数据边界或依赖关系的修改都要更新 contract 并重新确认。
+
 ### Step 7: 输出移交 (5 min)
 
 写入 `decision_log.stages.2`:
@@ -185,7 +216,9 @@ Qi: <与该子问题匹配的符号化目标>
   "key_constraints": [...],
   "objective_per_subproblem": {"<Qi>": "..."},
   "data_schema": {...},
-  "subproblem_dependency": {"<Qi>": ["<only evidence-backed upstream IDs>"]}
+  "subproblem_dependency": {"<Qi>": ["<only evidence-backed upstream IDs>"]},
+  "question_contracts": {"<Qi>": "state/questions/<Qi>/question_contract.json"},
+  "interpretation_approval": {"status": "approved", "approved_by": "...", "approved_at": "...", "notes": "..."}
 }
 ```
 
@@ -222,6 +255,8 @@ Qi: <与该子问题匹配的符号化目标>
 4. 全局变量表覆盖后续模型实际所需项且无凑数项
 5. 数据 schema 扫描完成
 6. 每个 Qi 的依赖关系明确 (依赖 / 独立,均有理由)
-7. L1 rubric 全维 ≥7；任何未解决的高影响理解冲突优先 `block`
+7. 每个 Qi 已创建独立 question contract，数据字段/范围不会从其他 Qi 默认继承
+8. 参赛者已明确批准逐题理解、交付物、数据边界和依赖；沉默不算批准
+9. L1 rubric 全维 ≥7；任何未解决的高影响理解冲突优先 `block`
 
 → 跳转 `stage_03_model_selection.md`

@@ -1,5 +1,5 @@
 """
-score_artifact.py — L1 Critic 输出后的本地处理脚本 (v3.2 四竞赛版)
+score_artifact.py — L1 Critic 输出后的本地处理脚本 (v3.3 四竞赛版)
 
 功能:
 1. 读取 critique JSON

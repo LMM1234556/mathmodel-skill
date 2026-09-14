@@ -1,13 +1,13 @@
 ---
 name: mathmodel-skill
-description: CUMCM 国赛、MCM/ICM 美赛、电工杯与“华为杯”中国研究生数学建模竞赛的端到端协作与质量控制工作流。Use when a user explicitly works on one of these contests or asks to run/review a modeling-competition project from problem interpretation through modeling, evidence-based figures, paper writing, compliance, and submission review. Provides source-anchored requirement traceability, persistent state, competition-specific rules/templates, deterministic helpers, and Codex/Claude Code handoff. Do not trigger for generic model selection, ordinary data analysis, or non-competition paper review.
+description: CUMCM 国赛、MCM/ICM 美赛、电工杯与“华为杯”中国研究生数学建模竞赛的端到端协作与质量控制工作流。Use when a user explicitly works on one of these contests or asks to run/review a modeling-competition project from problem interpretation through modeling, evidence-based figures, paper writing, compliance, and submission review. Provides per-question human approval, source-anchored interpretation, default-deny data isolation, comparable model candidates, persistent state, MATLAB figure evidence, and deterministic audits. Do not trigger for generic model selection, ordinary data analysis, or non-competition paper review.
 ---
 
-# mathmodel-skill — 数学建模四竞赛工作流 (v6.3)
+# mathmodel-skill — 数学建模四竞赛工作流 (v6.4)
 
 10 阶段把 72–100 小时的竞赛协作变成可恢复、可检查的流程。用户回答关键问题，agent 维护状态与脚本。每阶段产出经过 rubric 自评、定向精修与跨阶段一致性回检；Stage 8–9 先遵守当届官方规则，再做多视角终审。CUMCM 包含 91 份来源文档，其中 59 份进入文本统计；MCM/电工杯/华为杯经验统计明确为 `n=0`，不提供合成分位。
 
-**v6.3 更新**: 工作流中的定量图统一由 MATLAB 生成；加入高对比鲜艳但色盲友好的主题、任务驱动选图路由、结构审计和图表 registry/sidecar。Python 可用于建模计算，但须把绘图数据导出给 MATLAB。
+**v6.4 更新**: 保留完整 10 阶段主流程，并为每个子问题加入独立 `question_contract`。题意、数据字段/范围、上下游依赖、模型候选、验证与图表计划必须向参赛者展示；预执行、最终模型和最终图表三个审批门未通过时不得继续生成正式产物。`audit_question_contracts.py` 对跨题数据串用和失效状态执行失败关闭检查。
 
 ---
 
@@ -27,7 +27,7 @@ Codex 优先按 skill 目录发现本文件:
 
 ## Harness 兼容 (Claude Code / Codex)
 
-本 skill v6.3 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
+本 skill v6.4 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
 
 | harness | 入口文件 | 用户交互工具 | 状态文件 |
 |---------|---------|-------------|---------|
@@ -91,7 +91,7 @@ Codex 优先按 skill 目录发现本文件:
 **已有 state 触发** (用户中途回到 skill):
 ```
 1. 读 `<cwd>/state/decision_log.json` 的 schema、competition 与 current_stage
-2. 若 schema=3.1，先自动运行 `python <skill>/scripts/migrate_state.py <cwd>/state/decision_log.json`；保留备份后再继续。其他未知 schema 不自动改写
+2. 若 schema=3.1 或 3.2，先自动运行 `python <skill>/scripts/migrate_state.py <cwd>/state/decision_log.json`；保留备份后再继续。其他未知 schema 不自动改写
 3. 加载对应 stage_NN.md (按需结合 competitions/<comp>/* 内容)
 4. 不重复读 winning_patterns
 ```
@@ -129,10 +129,10 @@ Codex 优先按 skill 目录发现本文件:
 |---|------|-----------|------|------|-----------|
 | 0 | 团队启动 + 资料预扫 | `stage_00_kickoff.md` | 1h | L1 | 时长 / 语言 / 编译器 / 题号体系 |
 | 1 | 选题 (多题对比 → 1) | `stage_01_problem_selection.md` | 2-4h | L1 | 题号体系 (A-E/A-F/A-B) + task_type 写入 |
-| 2 | 原文追踪、独立复读与问题分解 | `stage_02_analysis.md` | 2-3h | L1 | 题面锚点与阻断歧义 |
-| 3 | 模型选型 (证据驱动的候选比较) | `stage_03_model_selection.md` | 2-4h | L1 + 反事实 | 通用 |
+| 2 | 原文追踪、独立复读与逐题数据边界 | `stage_02_analysis.md` | 2-3h | L1 + 题意确认 | 题面锚点、依赖图与 question contract |
+| 3 | 逐题模型候选、验证与预执行审批 | `stage_03_model_selection.md` | 2-4h | L1 + 人工门禁 | 基线/主流/进阶候选按同一任务比较 |
 | 4 | Foundation (假设+符号+术语) | `stage_04_foundation.md` | 1h | L1 | 通用 |
-| 5 | **递归子问题循环** Q1..Qn + per-Qi 加权聚合 | `stage_05_subproblem_loop.md` | 按题目分配 | L1 + 子检查点 | 实际子问数；图表证据 registry；per-Qi 加权 |
+| 5 | **受控子问题循环** Q1..Qn + per-Qi 加权聚合 | `stage_05_subproblem_loop.md` | 按题目分配 | 三个审批门 + L1 | 默认拒绝跨题数据；模型复评；MATLAB 图表确认 |
 | 6 | 全局灵敏度 / 稳健性 | `stage_06_robustness.md` | 2-3h | L1 + L2 | 按题面风险选择工程、数据或数学参数 |
 | 7 | 模型评价 + 推广 | `stage_07_evaluation.md` | 1-2h | L1 | 通用 |
 | 8 | 证据驱动论文写作 + 合规装配 | `stage_08_writing.md` | 12-30h | L1 + L2 | Claim IDs、反向提纲、AI 披露与 LaTeX 模板 |
@@ -149,8 +149,8 @@ Codex 优先按 skill 目录发现本文件:
 - 每阶段结尾: `<cwd>/state/decision_log.json` 必写 (核心决策 + 5 维评分)
 - stage 1-9: `references/rubrics.md` 对应章节 (L1 评分用)
 - **stage 1**: `competitions/<comp>/topic_specs.json` (题号 → task_type 映射)
-- **stage 2**: `references/problem_understanding_protocol.md` + `templates/shared/problem_spec.md`
-- stage 3, 5: `references/model_catalog.md` (跨竞赛通用)
+- **stage 2**: `references/problem_understanding_protocol.md` + `references/question_contract_protocol.md` + `templates/shared/{problem_spec.md,question_contract.json}`
+- **stage 3, 5**: `references/question_contract_protocol.md` + `references/model_catalog.md`；Stage 3 运行 `audit_question_contracts.py --phase plan`，Stage 5 求解前运行 `--phase execute --question <Qi>`，完成后运行 `--phase final --question <Qi>`
 - **stage 5 / 8 / 9**: `references/visualization_protocol.md`; 所有定量图必须由 MATLAB 生成，复制 `templates/shared/matlab/` 使用 `mm_choose_chart`、`mm_style` 与 `mm_export_figure`
 - **stage 5**: per-Qi 评分跑完后调 `scripts/score_artifact.py --mode aggregate_qi` 聚合
 - **stage 0 / 8 / 9**: `competitions/<comp>/current_rules.md` 存在时读取，并核对其中官方链接
@@ -164,6 +164,17 @@ Codex 优先按 skill 目录发现本文件:
 ---
 
 ## 收敛准则 (统一定义, 三处一致)
+
+评分 verdict 不能覆盖人工审批与数据隔离门禁。任一 Qi 出现以下情况时先 `block`：
+
+- 题意或高影响歧义未经团队确认；
+- `question_contract` 未通过 plan/execute/final 对应阶段审计；
+- 正式代码读取未声明的数据、字段、范围或上游结果；
+- `approvals.pre_execution` 未批准却开始正式求解；
+- `approvals.final_model` 未批准却写入确定性模型结论；
+- `approvals.final_figures` 未批准却把图表标记为正式稿。
+
+详细协议见 `references/question_contract_protocol.md`。审批只覆盖当前合同；数据、依赖、目标、硬约束或验证方案变化会使批准失效，并向下游传播 stale 状态。
 
 **verdict 优先级 (从高到低)**:
 
@@ -189,10 +200,11 @@ Codex 优先按 skill 目录发现本文件:
 - 开头: 读取 `<cwd>/state/decision_log.json`, 核对 current_stage 与上下文
 - 结尾: 更新 stage 节点 (核心决策 + 摒弃方案 + 评分), `current_stage += 1`
 
-`decision_log.json` v3.2 schema 关键字段 (与 `templates/shared/decision_log.json` 对齐):
+`decision_log.json` v3.3 schema 关键字段 (与 `templates/shared/decision_log.json` 对齐):
 - root: `competition`, `task_type`, `mode`, `current_stage`, `budget`, `events`, `compliance`
-- stage_2 扩展: `problem_source`, `requirement_traceability`, `interpretation_review`, `ambiguities`
-- stage_5 扩展: `qi_count`, `qi_weights`, `qi_status`
+- stage_2 扩展: `problem_source`, `requirement_traceability`, `interpretation_review`, `ambiguities`, `question_contracts`
+- stage_3 扩展: `question_contracts_plan_audit`, `pre_execution_approvals`
+- stage_5 扩展: `qi_count`, `qi_weights`, `qi_status`, `question_contracts_dir`, `question_contract_audits`
 - stage_8/9 扩展: claim-evidence、reverse-outline、figure-registry 与 reverse-trace gate
 - scores 扩展: 含 `weighted_mean`, `review_qis`, `refine_qis` (stage 5 加权聚合用)
 
@@ -228,7 +240,7 @@ L2 跨阶段回检 (stage 5/6/8 末尾) 读这个文件主动找冲突, 触发**
 - `competitions/cumcm/`: 91 份来源文档，59 份成功文本提取并进入观察分位；现有提取有局限，不能解释为官方阈值或获奖预测
 - `competitions/mcm/`: 规则基线已按 COMAP 2027 核对；经验模式是维护者启发，empirical 为 `n=0`
 - `competitions/diangong/`: 官网参赛规则与论文规范已于 2026-07-22 核对；经验模式是维护者启发，empirical 为 `n=0`
-- `competitions/huawei/`: 2026 邀请函已于 2026-09-02 核对；当届论文标准与 AI 规则仍待发布/获取，内部模板不得作为提交件，empirical 为 `n=0`
+- `competitions/huawei/`: 2026 邀请函与官方通知列表已于 2026-09-14 核对；当届论文标准与 AI 规则仍待发布/获取，内部模板不得作为提交件，empirical 为 `n=0`
 - 通用模型清单 `references/model_catalog.md` 跨竞赛复用
 
 当前 `scripts/ingest_papers.py` 是维护期归档工具，不能直接重建四个竞赛包的 `empirical.json`。新增语料前先补来源 provenance、提取 QA 与分组样本量。

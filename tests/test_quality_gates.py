@@ -47,18 +47,23 @@ class QualityGatePackageTests(unittest.TestCase):
             encoding="utf-8"
         )
         self.assertIn("problem_understanding_protocol.md", stage2)
+        self.assertIn("question_contract_protocol.md", stage2)
         self.assertIn("paper_quality_protocol.md", stage8)
         self.assertIn("visualization_protocol.md", stage8)
         self.assertIn("evidence_traceability_passed", stage9)
 
-    def test_decision_log_v32_exposes_quality_gate_state(self) -> None:
+    def test_decision_log_v33_exposes_quality_gate_state(self) -> None:
         state = json.loads(
             (ROOT / "templates" / "shared" / "decision_log.json").read_text(
                 encoding="utf-8"
             )
         )
-        self.assertEqual(state["_schema_version"], "3.2")
+        self.assertEqual(state["_schema_version"], "3.3")
         self.assertIn("requirement_traceability", state["stages"]["2"])
+        self.assertIn("question_contracts", state["stages"]["2"])
+        self.assertIn("interpretation_approval", state["stages"]["2"])
+        self.assertIn("question_contracts_plan_audit", state["stages"]["3"])
+        self.assertEqual(state["stages"]["5"]["question_contracts_dir"], "state/questions")
         self.assertIn("claim_evidence_matrix_path", state["stages"]["8"])
         self.assertIn("figure_audit_passed", state["stages"]["9"])
         self.assertEqual(
@@ -124,7 +129,7 @@ class MatlabFigurePipelineTests(unittest.TestCase):
 
 
 class StateMigrationTests(unittest.TestCase):
-    def test_v31_state_is_backed_up_and_merged(self) -> None:
+    def test_v31_state_is_backed_up_and_merged_to_v33(self) -> None:
         template = json.loads(
             (ROOT / "templates" / "shared" / "decision_log.json").read_text(
                 encoding="utf-8"
@@ -145,10 +150,37 @@ class StateMigrationTests(unittest.TestCase):
             self.assertIsNotNone(backup)
             self.assertTrue(backup.is_file())
             migrated = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(migrated["_schema_version"], "3.2")
+            self.assertEqual(migrated["_schema_version"], "3.3")
             self.assertEqual(migrated["problem"], "A")
             self.assertEqual(migrated["stages"]["2"]["requirement_traceability"], [])
+            self.assertEqual(migrated["stages"]["2"]["question_contracts"], {})
             self.assertEqual(migrated["custom_extension"], {"keep": True})
+
+    def test_v32_state_adds_question_contract_fields(self) -> None:
+        template = json.loads(
+            (ROOT / "templates" / "shared" / "decision_log.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        legacy = json.loads(json.dumps(template))
+        legacy["_schema_version"] = "3.2"
+        legacy["stages"]["2"].pop("question_contracts")
+        legacy["stages"]["3"].pop("question_contracts_plan_audit")
+        legacy["stages"]["5"].pop("question_contracts_dir")
+
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "decision_log.json"
+            path.write_text(json.dumps(legacy, ensure_ascii=False), encoding="utf-8")
+            backup = migrate_state.migrate(path)
+            self.assertIsNotNone(backup)
+            migrated = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(migrated["_schema_version"], "3.3")
+            self.assertEqual(migrated["stages"]["2"]["question_contracts"], {})
+            self.assertEqual(
+                migrated["stages"]["3"]["question_contracts_plan_audit"]["status"],
+                "pending",
+            )
+            self.assertEqual(migrated["stages"]["5"]["question_contracts_dir"], "state/questions")
 
 
 class HuaweiPackTests(unittest.TestCase):

@@ -3,20 +3,20 @@ stage: 5
 name: subproblem_loop
 duration_h: 6-12 per Qi
 inputs:
-  - "stage.2.subproblem_cards"
-  - "stage.3.selected_per_subproblem"
+  - "stage.2.{decomposition, subproblem_dependency, question_contracts, interpretation_approval}"
+  - "stage.3.{selected_per_subproblem, question_contracts_plan_audit, pre_execution_approvals}"
   - "stage.4.{assumptions, symbols}"
 outputs:
-  - "stage.5.sub_problems.{Qi}.{model_name, math_formulation_path, code_path, results_path, figures, key_metrics, physical_meaning_summary, scores, issues, iterations}"
+  - "stage.5.sub_problems.{Qi}.{question_contract_path, model_name, math_formulation_path, code_path, results_path, figures, key_metrics, approvals, contract_audits, physical_meaning_summary, scores, issues, iterations}"
   - "stage.5.cross_reference_chain"
   - "stage.5.assumption_change_history"
-loads_reference: ["references/model_catalog.md", "references/visualization_protocol.md", "competitions/<comp>/winning_patterns.md§5", "references/rubrics.md§Stage_5"]
+loads_reference: ["references/question_contract_protocol.md", "references/model_catalog.md", "references/visualization_protocol.md", "competitions/<comp>/winning_patterns.md§5", "references/rubrics.md§Stage_5"]
 loads_template: ["templates/shared/code_starter/<problem_type>.py", "templates/shared/matlab/"]
 feedback: ["L1_per_Qi", "sub_checkpoint", "L2_at_end_for_stage_3_4_consistency"]
 next: stage_06_robustness
 ---
 
-# Stage 5 — 递归子问题循环 (Q1..Qn)
+# Stage 5 — 受控子问题循环 (Q1..Qn)
 
 **时长预算**: 6-12h × n 个子问题 | **反馈层**: L1 + 子检查点
 
@@ -24,22 +24,24 @@ next: stage_06_robustness
 
 ## 目标
 
-为每个子问题 Qi 跑一遍完整的 mini-pipeline: **建模 → 求解 → 子结果分析 → 必要的子灵敏度**。子问题间只有在题面、数学接口或业务机制提供依据时才建立复用链；不存在合理依赖时保留独立结构并记录理由。这是论文的主体, 也是最容易翻车的阶段。
+为每个子问题 Qi 跑一遍受控的完整 mini-pipeline: **合同审计 → 基线与候选求解 → 公平验证 → 最终模型确认 → 子结果分析 → MATLAB 图表确认 → 必要的子灵敏度**。子问题默认数据隔离；只有题面、数学接口或业务机制提供依据且写入 contract 时才允许复用。这是论文主体，也是最容易因数据串用而产生致命错误的阶段。
 
 ---
 
 ## 输入
 
-- stage 2 子问题卡片
-- stage 3 选定模型 + toy demo 通过
+- stage 2 子问题卡片、数据边界、依赖图和 question contracts
+- stage 3 候选模型、验证方案、预执行批准和 plan audit
 - stage 4 假设/符号/术语
 - (进入存在依赖的 Qi 时) 已验证的上游结果
+- `state/questions/<Qi>/question_contract.json`
 
 ## 产出
 
 - 每 Qi 的: 数学模型完整公式 + 求解代码 + 可复现结果 + 支撑关键论点所需的图/表 + 物理意义讨论
 - 每张定量图由 MATLAB 生成；claim、数据来源、`.m` 生成脚本、选图理由、编码与 caption 记录在 `figures/figure_registry.json`
 - 跨子问题: 有依据的依赖显式传递；无依赖时显式记录独立理由
+- 每 Qi 保存实际读取路径、最终模型和最终图表批准；合同变化显式失效并传播到下游
 - 写入 `decision_log.stages.5.sub_problems.{Q1, Q2, Q3, ...}`
 
 ---
@@ -48,23 +50,35 @@ next: stage_06_robustness
 
 ```
 for Qi in [Q1, Q2, ..., Qn]:
+    A0. 加载 question contract，执行 --phase execute 审计
     A. 模型完整化 (45 min)
-    B. 求解实现 (2-4h)
-    C. 结果验证 (30 min)
+    B. 在同一数据合同下实现有效基线与保留候选 (2-4h)
+    C. 公平验证、比较并让参赛者批准最终模型
     D. 有证据需要时做子灵敏度
-    E. 物理意义 (15 min)
-    F. L1 自评 + 必要时 diff-only 精修
-    G. 输出移交 (写 decision_log)
-    H. 子检查点: Qi 的依赖/独立理由是否成立? 符号是否与 stage 4 一致?
+    E. 根据结果确定 MATLAB 图表并让参赛者批准
+    F. 物理意义 (15 min)
+    G. L1 自评 + 必要时 diff-only 精修
+    H. 输出移交、执行 --phase final 审计与跨 Qi 检查
 ```
 
 ---
 
 ## 单 Qi 操作流程详解
 
+### A0. 合同加载与执行门禁
+
+读取 `state/questions/<Qi>/question_contract.json`，先向参赛者简短复述已批准的题意、数据文件/表/字段/范围、上游结果、候选模型、验证和初步图表计划，再由 agent 自动运行：
+
+```bash
+python <skill>/scripts/audit_question_contracts.py \
+  --workspace <cwd> --phase execute --question <Qi>
+```
+
+审计通过前不得编写或运行正式求解器。运行时只允许读取 contract 中声明的原始数据和上游 result IDs，并从实际代码/运行日志把文件与哈希、工作表、字段、行范围、筛选、排除项和预处理写入 `data_contract.observed_accesses`，不得凭记忆补写。发现新数据、字段、筛选范围、排除项、连接键、预处理、上游结果、目标或硬约束时，立即停止，将 contract 标为 `invalidated`，重置 `pre_execution` 批准，更新受影响的下游 Qi 后重新确认。
+
 ### A. 模型完整化 (45 min)
 
-把 stage 2 的目标雏形 + stage 3 的已选模型, 升级为正式数学公式:
+把 stage 2 的目标雏形 + stage 3 保留的基线与候选模型，升级为可在同一任务下比较的正式数学公式。预执行推荐可以优先实现，但不得跳过 contract 中作为最终比较依据的有效基线：
 
 ```
 问题 Qi 数学模型 (<与实际实现一致的模型名>):
@@ -106,7 +120,7 @@ import cvxpy as cp
 import json
 np.random.seed(42)  # 可复现性
 
-# Step 1: 加载数据
+# Step 1: 只加载本 Qi question contract 已批准的数据
 df = pd.read_excel("data/附件1.xlsx")
 with open("config/problem.json", encoding="utf-8") as fh:
     config = json.load(fh)
@@ -144,8 +158,10 @@ np.save("results/Q1_x.npy", x_star)
 - 设 random seed (anti_pattern D4)
 - `print` 关键状态 (sanity check)
 - 结果保存到 `results/Qi_*.npy` 或 `.csv`
+- 保存本次实际输入路径、字段、行数、筛选与哈希；与 `data_contract` 不一致立即失败
+- 基线和候选使用相同任务定义、硬约束、数据版本与验证切分；无法公平比较时不得报告“提升”
 
-### C. 结果验证 (30 min)
+### C. 结果验证、候选比较与最终模型批准
 
 四步 sanity check (anti_pattern D2/D3):
 
@@ -183,6 +199,10 @@ else:
 
 不通过任一项 → 回 A 检查模型。
 
+按 Stage 3 预先登记的指标、切分/情景和失败条件比较有效基线与保留候选。报告绝对指标、相对变化、稳健性、计算时间、解释性和失败场景；不得在看见结果后只更换对推荐模型有利的指标。若验证设计必须改变，先使 pre-execution approval 失效并重新确认。
+
+向参赛者展示比较表和推荐理由，由参赛者决定论文最终模型。将选择写入 `execution.chosen_model_id`，并把确认人、时间和 `--digest-for final_model` 生成的摘要写入 `approvals.final_model`。在最终模型批准前，不得把模型写成论文定论；“分数最高”也不能替代参赛者批准。
+
 ### D. 子灵敏度 (按需)
 
 只对本子问题中会影响结论、且存在测量误差、估计误差或情景不确定性的参数做局部灵敏度 (全局留 stage 6)。扰动范围来自数据精度、置信区间、规则边界或领域证据；若没有有意义的不确定参数，记录理由并跳过，不生成装饰性曲线:
@@ -202,6 +222,8 @@ pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
 )
 ```
 
+### E. 最终图表方案与批准
+
 上面的 Python 代码只输出绘图数据。正式图表必须读取
 `references/visualization_protocol.md`，由 MATLAB 脚本读取 CSV/MAT，并使用
 `templates/shared/matlab/` 中的 `mm_choose_chart`、`mm_style` 与
@@ -210,7 +232,9 @@ pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
 每个 Qi 结束前，将 `.figure.json` sidecar 汇总进
 `figures/figure_registry.json`。同一数据或结论的重复图只保留表达最清楚的一张；需要精确查数时优先使用表格。
 
-### E. 物理意义讨论 (15 min)
+结果产生后重新判断最终图表类型，不因 Stage 3 的初步推荐而锁死。向参赛者展示图表草稿、对应 result/claim、备选图形、单位、不确定性和选图理由。批准后填写 `figure_plan.final_chart_types`、`rationale`、`result_ids`，并把确认人、时间和 `--digest-for final_figures` 生成的摘要写入 `approvals.final_figures`。如果本 Qi 不需要图，保留已批准的 `no_figure_reason`，不得为凑图生成装饰图。
+
+### F. 物理意义讨论 (15 min)
 
 围绕题面所问的含义解释结果，并把每个判断绑定到保存的产物；以下是占位结构，不得把示意数字复制进论文:
 
@@ -222,7 +246,7 @@ pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
 结论边界: <哪些假设或数据变化会使解释失效>。
 ```
 
-### F. L1 自评 + diff-only 精修
+### G. L1 自评 + diff-only 精修
 
 调用 `references/feedback_layer1_critic.md` 协议:
 - 输出 5 维 JSON 评分
@@ -231,11 +255,12 @@ pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
 - 若任一维 <7 → diff-only 精修, iter+=1, 上限 3
 - 全维 ≥9 → 早退
 
-### G. 输出移交
+### H. 输出移交、合同终审与跨 Qi 检查
 
 写入 `decision_log.stages.5.sub_problems.Q1`:
 ```json
 {
+  "question_contract_path": "state/questions/Q1/question_contract.json",
   "model_name": "...",
   "math_formulation_path": "results/Q1_model.tex",
   "code_path": "results/Q1_solve.py",
@@ -244,6 +269,8 @@ pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
   "figure_registry_ids": ["Q1-F01"],
   "key_metrics": {"<metric_name>": "<value loaded from saved result>"},
   "physical_meaning_summary": "...",
+  "approvals": {"pre_execution": "approved", "final_model": "approved", "final_figures": "approved"},
+  "contract_audits": {"plan": "passed", "execute": "passed", "final": "passed"},
   "scores": {...},
   "issues": [
     {"severity": "high|medium|low", "where": "...", "problem": "...", "fix": "..."}
@@ -252,7 +279,17 @@ pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
 }
 ```
 
-### H. 子检查点 (跨 Qi 后)
+在实际输入、结果、代码和批准状态写回 contract 后，将 contract `status` 设为
+`completed`，由 agent 自动运行：
+
+```bash
+python <skill>/scripts/audit_question_contracts.py \
+  --workspace <cwd> --phase final --question <Qi>
+```
+
+final audit 失败时将 Qi 置为 `block`，不得进入下一个 Qi 或论文正式写作。
+
+#### 跨 Qi 子检查点
 
 进入 Qi+1 之前,**自检**:
 
@@ -260,6 +297,7 @@ pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
    - 题目要求? → 必须用
    - 题目允许? → 只有在依赖关系有数学或业务依据时复用，并记录理由
    - 题目禁止? → 跳过
+   - 实际读取未登记? → 立即 block，删除错误产物或更正 contract 后重新批准和求解
 
 2. **符号一致**: Qi 中用的 x, p, c 是否与 stage 4 符号表一致?
    - 不一致 → 立即更新本 Qi 或更新符号表 (二选一并记录)
@@ -272,6 +310,8 @@ pd.DataFrame({"delta": deltas, "profit": profits}).to_csv(
    - **依赖** → 重跑该 Qi 的 Step C (sanity check) + Step D (子灵敏度), 不重跑完整 5 步
    - **不依赖** → 在 `decision_log.stages.5.assumption_change_history` 标记 "Qi 不受 patch X 影响, 跳过重跑"
    - 检查方法: 读 `decision_log.events.log` 找 `type=L2_backtrack` 且 `target=stage.4.assumptions[k]` 的记录, 然后 grep Qi 的代码与 math_formulation 是否引用 assumption k
+
+5. **合同失效传播**: 上游数据、模型或结果改变时，读取其 `invalidation.downstream_questions`，将所有受影响 Qi 标记 stale，清除对应 final audit pass；只重跑真正受影响的 Qi，但不得保留旧论文结论。
 
 ---
 
@@ -347,7 +387,7 @@ else:
 | 全 Qi pass + weighted_min ≥ 7 + weighted_mean ≥ 8 | `pass` | 进 stage 6 |
 | 无 refine 且任 Qi 为 mark_for_review，且加权阈值满足 | `pass_with_review` | 进 stage 6, **L2 必读 review_qis** (写入 stage 5 末尾的 L2 触发条件) |
 | 仅部分 Qi 为 refine，至少一个 Qi 非 refine | `refine_partial` | **只 refine 低分 Qi**, 不动其他已验证 Qi |
-| 全部 Qi 都为 refine | `refine` | 整体回到 Step A-G，优先排查共享模型、数据或假设问题 |
+| 全部 Qi 都为 refine | `refine` | 整体回到受影响的 Step A0-H，优先排查共享模型、数据或假设问题 |
 | 无 refine，仅有 mark_for_review 但 weighted_mean < 8 | `refine` | 对薄弱内容做 stage-level 修补 |
 
 ### 示例
@@ -359,12 +399,12 @@ else:
 
 `Q2 min=5` (refine) + Q1/Q3 都 pass:
 - verdict = `refine_partial`, refine_qis = ["Q2"]
-- 只重跑 Q2 的 Step A-G; Q1/Q3 的已验证产物保持不动
+- 只重跑 Q2 受影响的 Step A0-H；Q1/Q3 的已验证产物保持不动，除非依赖失效传播命中
 - iter+=1 仅对 Q2; 老 iter cap 3 仍生效。仅低分且无 high issue 时可按既有协议 carryover；high issue 永不 carryover
 
 全部 Qi 都低于 per-Qi 门槛:
 - verdict = `refine`，不是 `refine_partial`
-- 整体检查共享数据处理、符号、假设和模型接口，再重跑受共同原因影响的 Step A-G
+- 整体检查共享数据处理、符号、假设和模型接口，再重跑受共同原因影响的 Step A0-H
 
 ### 调用脚本 + verdict 问答确认 (v5 Friendly Mode)
 
@@ -396,7 +436,7 @@ python <skill>/scripts/score_artifact.py \
 ```
 【Stage 5 聚合完成: verdict=refine_partial, Q2 需 refine, Q1/Q3 已 pass】
 
-  1) 按推荐 refine Q2 (重跑 Q2 Step A-G, Q1/Q3 不动, 耗时按当前预算估算)
+  1) 按推荐 refine Q2 (重跑 Q2 受影响的 Step A0-H, Q1/Q3 不动, 耗时按当前预算估算)
   2) 全 stage refine (含 Q1/Q3, 耗时按当前预算估算)
   3) 强制 carryover, 接受当前结果进 stage 6 (Q2 弱点留 stage 9 panel 处理)
   4) 让我决定 (推荐 1)
@@ -414,12 +454,13 @@ python <skill>/scripts/score_artifact.py \
 
 ## 退出条件 (整个 stage 5)
 
-1. 所有 Qi 通过 per-Qi rubric (全维 ≥7) **或** verdict ∈ {pass, pass_with_review} 经 H.2 聚合
-2. Stage-level rubric 全维 ≥7
-3. 所有有依据的依赖链已实现并验证；不存在合理依赖时已有明确记录
-4. (championship) red-team 一次,针对最弱的 Qi (优先 review_qis)
-5. `figures/figure_registry.json` 覆盖正文候选图；所有定量图 `renderer=MATLAB`，且不存在错误单位、无来源、无选图理由或无论点的图
-6. 触发 L2: 跨阶段回检 stage 3 (模型选择前提是否被结果推翻) + stage 4 (符号一致性) + **review_qis 列表 (若 verdict=pass_with_review)**
+1. 所有 Qi 的 question contract 均通过 plan、execute、final 三阶段审计，三个团队批准均存在；评分不能覆盖合同错误
+2. 所有 Qi 通过 per-Qi rubric (全维 ≥7) **或** verdict ∈ {pass, pass_with_review} 经 H.2 聚合
+3. Stage-level rubric 全维 ≥7
+4. 所有有依据的依赖链已实现并验证；实际输入不包含未声明或禁止数据
+5. (championship) red-team 一次,针对最弱的 Qi (优先 review_qis)
+6. `figures/figure_registry.json` 覆盖正文候选图；所有定量图 `renderer=MATLAB`，且不存在错误单位、无来源、无选图理由或无论点的图；无图 Qi 有已批准理由
+7. 触发 L2: 跨阶段回检 stage 3 (模型选择前提是否被结果推翻) + stage 4 (符号一致性) + **review_qis 列表 (若 verdict=pass_with_review)**
 
 → 跳转 `stage_06_robustness.md`
 
