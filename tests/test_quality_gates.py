@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,6 +36,18 @@ def load_render_paper():
 render_paper = load_render_paper()
 
 
+def load_score_artifact():
+    path = ROOT / "scripts" / "score_artifact.py"
+    spec = importlib.util.spec_from_file_location("mathmodel_score_quality", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+score_artifact = load_score_artifact()
+
+
 class QualityGatePackageTests(unittest.TestCase):
     def test_stage_files_route_to_new_protocols(self) -> None:
         stage2 = (ROOT / "references" / "stage_02_analysis.md").read_text(
@@ -52,13 +65,26 @@ class QualityGatePackageTests(unittest.TestCase):
         self.assertIn("visualization_protocol.md", stage8)
         self.assertIn("evidence_traceability_passed", stage9)
 
-    def test_decision_log_v33_exposes_quality_gate_state(self) -> None:
+        stage0 = (ROOT / "references" / "stage_00_kickoff.md").read_text(
+            encoding="utf-8"
+        )
+        identify = stage0.index("Step 1A: 赛事识别")
+        verify = stage0.index("Step 1B: 当届规则核验")
+        remaining = stage0.index("Step 1C: 其余元信息")
+        self.assertLess(identify, verify)
+        self.assertLess(verify, remaining)
+
+    def test_decision_log_v34_exposes_quality_gate_state(self) -> None:
         state = json.loads(
             (ROOT / "templates" / "shared" / "decision_log.json").read_text(
                 encoding="utf-8"
             )
         )
-        self.assertEqual(state["_schema_version"], "3.3")
+        self.assertEqual(state["_schema_version"], "3.4")
+        self.assertIsNone(state["competition"])
+        self.assertIn("basis_year", state["compliance"]["ruleset"])
+        self.assertIn("basis_status", state["compliance"]["ruleset"])
+        self.assertIn("replacement_required", state["compliance"]["ruleset"])
         self.assertIn("requirement_traceability", state["stages"]["2"])
         self.assertIn("question_contracts", state["stages"]["2"])
         self.assertIn("interpretation_approval", state["stages"]["2"])
@@ -74,6 +100,15 @@ class QualityGatePackageTests(unittest.TestCase):
             "matlab_final_figures_only",
             state["stages"]["8"]["paper_quality_checks"],
         )
+
+    def test_scripts_do_not_invent_a_default_competition(self) -> None:
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertIsNone(score_artifact.resolve_competition(None, {}))
+            with tempfile.TemporaryDirectory() as temp:
+                missing_log = Path(temp) / "decision_log.json"
+                self.assertIsNone(
+                    render_paper.resolve_competition(None, missing_log)
+                )
 
 
 class MatlabFigurePipelineTests(unittest.TestCase):
@@ -129,7 +164,7 @@ class MatlabFigurePipelineTests(unittest.TestCase):
 
 
 class StateMigrationTests(unittest.TestCase):
-    def test_v31_state_is_backed_up_and_merged_to_v33(self) -> None:
+    def test_v31_state_is_backed_up_and_merged_to_v34(self) -> None:
         template = json.loads(
             (ROOT / "templates" / "shared" / "decision_log.json").read_text(
                 encoding="utf-8"
@@ -150,7 +185,7 @@ class StateMigrationTests(unittest.TestCase):
             self.assertIsNotNone(backup)
             self.assertTrue(backup.is_file())
             migrated = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(migrated["_schema_version"], "3.3")
+            self.assertEqual(migrated["_schema_version"], "3.4")
             self.assertEqual(migrated["problem"], "A")
             self.assertEqual(migrated["stages"]["2"]["requirement_traceability"], [])
             self.assertEqual(migrated["stages"]["2"]["question_contracts"], {})
@@ -174,7 +209,7 @@ class StateMigrationTests(unittest.TestCase):
             backup = migrate_state.migrate(path)
             self.assertIsNotNone(backup)
             migrated = json.loads(path.read_text(encoding="utf-8"))
-            self.assertEqual(migrated["_schema_version"], "3.3")
+            self.assertEqual(migrated["_schema_version"], "3.4")
             self.assertEqual(migrated["stages"]["2"]["question_contracts"], {})
             self.assertEqual(
                 migrated["stages"]["3"]["question_contracts_plan_audit"]["status"],
@@ -182,8 +217,51 @@ class StateMigrationTests(unittest.TestCase):
             )
             self.assertEqual(migrated["stages"]["5"]["question_contracts_dir"], "state/questions")
 
+    def test_v33_state_adds_explicit_rule_basis_fields(self) -> None:
+        template = json.loads(
+            (ROOT / "templates" / "shared" / "decision_log.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        legacy = json.loads(json.dumps(template))
+        legacy["_schema_version"] = "3.3"
+        legacy["compliance"]["ruleset"].pop("basis_year")
+        legacy["compliance"]["ruleset"].pop("basis_status")
+        legacy["compliance"]["ruleset"].pop("_basis_status_doc")
+        legacy["compliance"]["ruleset"].pop("replacement_required")
+
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "decision_log.json"
+            path.write_text(json.dumps(legacy, ensure_ascii=False), encoding="utf-8")
+            backup = migrate_state.migrate(path)
+            self.assertIsNotNone(backup)
+            migrated = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(migrated["_schema_version"], "3.4")
+            self.assertIsNone(migrated["compliance"]["ruleset"]["basis_year"])
+            self.assertIsNone(migrated["compliance"]["ruleset"]["basis_status"])
+            self.assertFalse(
+                migrated["compliance"]["ruleset"]["replacement_required"]
+            )
+
 
 class HuaweiPackTests(unittest.TestCase):
+    def test_prior_year_rules_are_provisional_not_submission_authority(self) -> None:
+        rules = json.loads(
+            (ROOT / "competitions" / "huawei" / "provisional_rules.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(rules["target_competition_year"], 2026)
+        self.assertEqual(rules["basis_year"], 2025)
+        self.assertEqual(rules["basis_status"], "prior_year_provisional")
+        self.assertTrue(rules["replacement_required"])
+        self.assertFalse(rules["submission_authorized"])
+        self.assertIn("official_template", rules["not_carried_to_2026"])
+        self.assertEqual(len(rules["official_source_sha256"]), 2)
+        self.assertTrue(
+            all(len(value) == 64 for value in rules["official_source_sha256"].values())
+        )
+
     def test_internal_review_template_wires_all_sections(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

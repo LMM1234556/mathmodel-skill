@@ -3,12 +3,14 @@ stage: 0
 name: kickoff
 duration_h: 1
 inputs:
-  - "user_inputs.{competition, problem_id, team_size, deadline, pdf_path}"
+  - "user_inputs.{competition, competition_year, problem_id, team_size, deadline, pdf_path}"
 outputs:
   - "stage.0.{team_roles, tools_ready, problem_scan, time_budget_h, collab_protocol, checklist_completed}"
   - "root.{competition, task_type}"
+  - "compliance.ruleset.{competition_year,basis_year,basis_status,replacement_required,verified_at,official_urls}"
 loads_reference:
   - "competitions/<comp>/current_rules.md"
+  - "competitions/huawei/provisional_rules.json (only when Huawei prior-year fallback is selected)"
   - "competitions/<comp>/topic_specs.json"
   - "competitions/<comp>/README.md"
 loads_template:
@@ -46,24 +48,41 @@ next: "stage_01_problem_selection | wait_for_prompt"
 
 ## 操作流程
 
-### Step 1: 元信息收集 (5 min) — 问答式
+### Step 1A: 赛事识别 (2 min) — 第一个交互门
 
-收集以下 5 个启动字段。先合并当前用户消息与已有 state，**只询问尚缺字段**；不要为了凑满五问重复询问用户已经给出的竞赛、题号或 PDF 状态。将缺失项合并成一轮问答（Claude Code: 单条 AskUserQuestion；Codex: 编号列表，见 `references/harness_compat.md` §1）：
+先合并当前用户消息与已有 state，只确定两个字段：
 
-1. **竞赛** — 选项: `1) cumcm 国赛  2) mcm 美赛  3) diangong 电工杯  4) huawei 华为杯研究生数模  5) 让我决定 (推荐按用户目标)`
-2. **题号** — 依当届题面和竞赛包动态生成；华为杯题面未发布前只提供 `未公布`，不得从往届预填
-3. **队员数与各人擅长** — 自由文本 (例: "3 人, 张建模, 李编程, 王写作")
-4. **截止时间** — 自由文本 (ISO 字符串或 "距现在 X 小时")
-5. **题目 PDF 路径** — 自由文本 ("未公布"亦可)
+1. **竞赛** — `cumcm` 国赛 / `mcm` 美赛 / `diangong` 电工杯 / `huawei` 华为杯研究生数模；
+2. **目标年份** — 参赛届次对应的公历年份。
 
-**禁止**让用户手动编辑 decision_log.json; 拿到答案后由 agent 自动写入。
+用户已经明确提供时直接复述确认，不重复询问。缺失时只问缺失项，不把题号、模型、规则版本等问题混进这一轮。不得默认选择 cumcm；“让我决定”只能用于根据用户已表达的赛事目标消歧，不能凭空替用户选择比赛。
 
-写入:
-- `decision_log.competition` ← 第 1 问
-- `decision_log.problem_meta.{year, letter, title, deadline_iso, team_size}` ← 第 2-4 问
-- `decision_log.events.log` ← 第 5 问 (PDF 路径)
+确定后由 agent 初始化 state，并立即写入：
 
-先读取 `competitions/<comp>/current_rules.md`，再打开其中的官方来源复核当年规则；仓库内经验值不能覆盖官方通知。Stage 0 不预加载 `winning_patterns.md`：只有后续阶段需要某条经验模式、且能追溯其适用证据时才按需读取，避免把历史启发式误当成当年规则。
+- `decision_log.competition`；
+- `decision_log.problem_meta.year`；
+- `decision_log.compliance.ruleset.competition_year`。
+
+赛事和年份写入前，不得加载任何 `competitions/<comp>/` 规则、模板、经验统计或题号列表。
+
+### Step 1B: 当届规则核验 (3 min) — 第二个交互门
+
+只读取已选赛事的 `competitions/<comp>/current_rules.md`，打开其中官方来源，核验目标年份的赛程、论文格式、匿名、文件、AI 和提交要求；仓库经验值不能覆盖官方通知。
+
+- 当届规则完整：写入 `basis_year=competition_year`、`basis_status=current_official`、`replacement_required=false`。
+- 当届规则不完整：先列出已确认项、缺失项和影响，再让参赛者选择“等待当届规则”或“采用可用的往届临时基线”。不得自动启用往届规则。
+- 只有参赛者明确选择华为杯 2025 临时基线时，才加载 `competitions/huawei/provisional_rules.json`，并写入 `competition_year=2026`、`basis_year=2025`、`basis_status=prior_year_provisional`、`replacement_required=true`。
+
+### Step 1C: 其余元信息 (剩余时间) — 规则状态确定后
+
+再合并当前消息与 state，只询问尚缺字段：
+
+1. **题号** — 依已选赛事的当届题面动态生成；题面未发布时只提供“未公布”；
+2. **队员数与各人擅长** — 自由文本；
+3. **截止时间** — ISO 字符串或“距现在 X 小时”；
+4. **题目 PDF 路径** — “未公布”亦可。
+
+禁止让用户手动编辑 `decision_log.json`。Agent 写入 `problem_meta`、PDF 来源事件和后续状态。Stage 0 不预加载 `winning_patterns.md`：只有后续阶段需要某条经验模式、且能追溯其适用证据时才按需读取。
 
 **自动推断** (基于 competition 字段, 加载 `competitions/<comp>/README.md` 与 `topic_specs.json`):
 - 时长预算 (cumcm 72h / mcm 96h / diangong 72h / huawei 2026 为 100h)
@@ -132,7 +151,7 @@ cp <skill>/templates/shared/decision_log.json state/decision_log.json   # 仅当
 | cumcm | `<skill>/templates/latex/cumcm/main.tex` | xelatex | 91 份来源记录 / 59 份可提取样本观察 |
 | mcm | `<skill>/templates/latex/mcm/main.tex` | pdflatex | COMAP 2027 规则基线；经验统计 `n=0` |
 | diangong | `<skill>/templates/latex/diangong/main.tex` | xelatex | 官网 2026-03-21 页面基线；经验统计 `n=0` |
-| huawei | `<skill>/templates/latex/huawei/main.tex` | xelatex，仅内部评阅 | 2026 邀请函已核对；当届标准文档与 AI 规则待获取；经验统计 `n=0` |
+| huawei | `<skill>/templates/latex/huawei/main.tex` | xelatex，仅内部评阅 | 2026 邀请函已核对；2025 格式/AI 规则可作 provisional 预检；当届文件仍须替换；经验统计 `n=0` |
 
 ### Step 4: 题目预扫 (题目公布后,15 min)
 

@@ -102,7 +102,7 @@ class PackageIntegrityTests(unittest.TestCase):
         self.assertEqual(stages, list(range(10)))
 
     def test_anti_pattern_counts_and_deferred_state(self) -> None:
-        expected = {"cumcm": 42, "mcm": 16, "diangong": 12, "huawei": 12}
+        expected = {"cumcm": 42, "mcm": 16, "diangong": 12, "huawei": 13}
         pattern = re.compile(r"^###\s+([A-Z]\d+)\.\s", re.MULTILINE)
 
         for competition, count in expected.items():
@@ -742,7 +742,7 @@ class DoctorTests(unittest.TestCase):
         self.assertEqual(marker_check.status, "pass")
         self.assertEqual(marker_check.detail, "huawei: 10/10 section markers")
 
-    def test_workspace_state_requires_v33_and_matching_competition(self) -> None:
+    def test_workspace_state_requires_v34_and_matching_competition(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             workspace = Path(temp)
             state_path = workspace / "state" / "decision_log.json"

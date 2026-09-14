@@ -1,5 +1,5 @@
 """
-render_paper.py — markdown 中间产物 → 最终 PDF (v3.3 四竞赛版)
+render_paper.py — markdown 中间产物 → 最终 PDF (v3.4 四竞赛版)
 
 功能:
 1. 读 stage 8 各节 markdown 产出 (<cwd>/paper_workspace/)
@@ -142,8 +142,8 @@ _LATEX_ESCAPES = {
 # 路径与配置
 # ============================================================================
 
-def resolve_competition(cli_arg: str = None, decision_log_path: Path = None) -> str:
-    """优先级: CLI > env MATHMODEL_COMPETITION > decision_log.competition > 'cumcm'"""
+def resolve_competition(cli_arg: str = None, decision_log_path: Path = None) -> str | None:
+    """优先级: CLI > env MATHMODEL_COMPETITION > decision_log.competition；禁止隐式默认赛事。"""
     if cli_arg:
         return cli_arg
     env = os.environ.get("MATHMODEL_COMPETITION")
@@ -157,7 +157,7 @@ def resolve_competition(cli_arg: str = None, decision_log_path: Path = None) -> 
                 return log["competition"]
         except (json.JSONDecodeError, KeyError):
             pass
-    return "cumcm"
+    return None
 
 
 def resolve_decision_log_path(workspace: Path, explicit_path: str = None) -> Path:
@@ -730,7 +730,7 @@ def main():
     parser.add_argument("--workspace", type=str, required=True,
                         help="<cwd>/paper_workspace/ 目录, 含 01..10_*.md 节文件")
     parser.add_argument("--competition", type=str, default=None,
-                        help="cumcm | mcm | diangong | huawei (默认从 decision_log 读, 缺失则 cumcm)")
+                        help="cumcm | mcm | diangong | huawei (默认从 decision_log 读；缺失时报错)")
     parser.add_argument("--decision-log", type=str, default=None,
                         help="可选: 指定 decision_log.json 路径用于自动检测 competition")
     parser.add_argument("--control-number", "--mcm-control-number",
@@ -791,6 +791,15 @@ def main():
         return 1
 
     competition = resolve_competition(args.competition, decision_log_path)
+    if competition is None:
+        print(
+            "[FAIL] 未指定 competition。请先在 Stage 0 与参赛者确认赛事和年份并写入 "
+            "decision_log，或显式传入 --competition。"
+        )
+        return 1
+    if competition not in TEMPLATE_MAP:
+        print(f"[FAIL] 未知 competition: {competition!r}; 支持 {sorted(TEMPLATE_MAP)}")
+        return 1
     print(f"competition: {competition}")
 
     if (

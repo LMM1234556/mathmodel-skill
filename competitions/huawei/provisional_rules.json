@@ -1,0 +1,49 @@
+{
+  "_schema_version": "1.0",
+  "_doc": "2025 华为杯官方规则的结构化临时基线，只用于 2026 训练、内容组织和预排版，不授权提交。",
+  "target_competition_year": 2026,
+  "basis_year": 2025,
+  "basis_status": "prior_year_provisional",
+  "replacement_required": true,
+  "submission_authorized": false,
+  "verified_at": "2026-09-14",
+  "official_sources": {
+    "opening_notice": "https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c90801b9914a68201994b1403512e96?page=1",
+    "paper_format_pdf": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=65a3475c51e94c2fb8dea617bb1a310c",
+    "ai_rules_pdf": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=e3edba52b87c4bf7922f737c35c14b74"
+  },
+  "official_source_sha256": {
+    "paper_format_pdf": "127d0b629d2475f97ed1e206dd7d34ccb6a9e0c56a75e7493bcd969c9dfa03c0",
+    "ai_rules_pdf": "6441795b250bed6d15f936e4088cb7086f0e9d8f09df016f7be186cf2b7d8779"
+  },
+  "paper_rehearsal": {
+    "problem_letters": ["A", "B", "C", "D", "E", "F"],
+    "abstract_max_pages": 2,
+    "english_abstract_required": false,
+    "page_numbering": "摘要页为第1页，页脚中部连续阿拉伯数字",
+    "header_allowed": false,
+    "title_font": "三号黑体",
+    "level_1_heading_font": "四号黑体，居中",
+    "chinese_body_font": "小四宋体，单倍行距",
+    "identity_rule": "除官方封面外不得出现学校、队员姓名、队伍编号或其他身份标志",
+    "citation_rule": "正文方括号编号，参考文献按引用顺序；书籍注明页码，网络来源注明访问日期，引用程序注明来源",
+    "pdf_uncompressed": true,
+    "support_archive_limit_mb_2025_only": 50
+  },
+  "ai_rehearsal": {
+    "role": "辅助而非主导，不能替代独立思考和核心创新",
+    "human_language_required": true,
+    "unverified_model_or_formula_risk": true,
+    "data_analysis_annotation_fields": ["工具名称", "版本或型号", "开发机构或公司", "版本发布日期"],
+    "code_header_annotation_fields": ["工具名称", "版本或型号", "开发机构或公司", "版本发布日期"],
+    "problem_requested_trace_fields": ["输入内容", "输出后处理", "开发框架", "开源软件", "技术路线", "假设条件", "参数与超参数"]
+  },
+  "not_carried_to_2026": [
+    "submission_dates",
+    "filename_year_digits",
+    "support_archive_limit_mb",
+    "cover_assets_and_logos",
+    "official_template",
+    "md5_tool"
+  ]
+}

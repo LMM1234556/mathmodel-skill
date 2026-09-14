@@ -9,6 +9,12 @@
   <https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c9080189dcfa24e019dddacc24a1314?page=0>
 - 官方通知列表：<https://cpipc.acge.org.cn/cw/contestNews/list/4/1>
 - 赛事主页：<https://cpipc.acge.org.cn/cw/hp/4>
+- 2025 开赛公告（仅作下一节的临时兼容基线）：
+  <https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c90801b9914a68201994b1403512e96?page=1>
+- 2025 论文格式规范：
+  <https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=65a3475c51e94c2fb8dea617bb1a310c>
+- 2025 AI 工具及输出使用规定：
+  <https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=e3edba52b87c4bf7922f737c35c14b74>
 
 ## 已由 2026 官方邀请函确认
 
@@ -32,7 +38,7 @@
 
 截至 2026-09-14，本仓库核对到的官方通知列表中没有出现 2026 年论文格式规范、可下载的
 《竞赛论文标准文档》或 2026 年 AI 工具使用规定。因此下列项目保持
-`unknown`，不得沿用 2025 数字或其他比赛规则：
+`unknown`。不得把 2025 数字写成 2026 已确认规则：
 
 - 页数、页边距、字体、封面与编号位置；
 - 文件大小、附件/支撑材料格式；
@@ -40,8 +46,51 @@
 - AI 工具允许范围、标注、引用和提交材料；
 - 题目数量、题号、每题的专项要求。
 
+## 2025 临时兼容基线（只用于训练与预排版）
+
+在 2026 对应文件尚未取得时，可以按 2025 官方文件做内容组织、匿名检查
+和 AI 使用台账演练。写入 `decision_log.compliance.ruleset` 时必须区分目标
+年份和依据年份：
+
+机器可读的检查基线见 `competitions/huawei/provisional_rules.json`；其
+`submission_authorized` 固定为 `false`。
+
+```json
+{
+  "competition_year": 2026,
+  "basis_year": 2025,
+  "basis_status": "prior_year_provisional",
+  "replacement_required": true
+}
+```
+
+2025 官方文件可暂时提供以下检查项：
+
+- 从 A–F 中选一题；题目、摘要和关键词位于摘要页，下一页开始正文；
+- 从摘要页开始连续编页码，页码位于页脚中部；论文无页眉；
+- 除官方封面外，不出现学校、队员姓名、队号或其他身份标志；
+- 题目为三号黑体、一级标题为四号黑体并居中，其他中文为小四宋体、
+  单倍行距；
+- 摘要一般不超过两页，无需英文翻译，覆盖建模思路、方法、模型、结果与
+  结论、创新点和关键词；
+- 正文引用用方括号编号并按出现顺序列参考文献；书籍引用注明页码，网络
+  来源注明访问日期；引用程序注明来源；
+- 2025 年要求 PDF 不压缩，采用“MD5—PDF—按题面需要提交附件”的分阶段
+  流程；2025 附件上限为 50 MB。文件名中的年份、提交窗口、附件上限和
+  MD5 工具都不得直接套到 2026；
+- AI 只能作为辅助，团队必须理解输出并用自己的语言表述；AI 生成但无法
+  核实来源的模型或公式存在不被认可的风险；
+- AI 辅助数据分析应在相邻位置注明工具名称、版本/型号、开发机构和版本
+  日期；AI 辅助代码应在程序开头作同类说明；如题面要求，还需保存输入及
+  输出后处理、框架、开源软件、技术路线、假设和参数/超参数。
+
+这套基线的作用是减少空白期的准备成本，不是确认 2026 规则没有变化。
+Stage 8 可以据此产生 `provisional` 预排版和 AI 合规清单；Stage 9 可以做
+模拟检查，但 `rules_verified` 与 `submission_ready` 必须保持 `false`，直到
+`basis_status=current_official` 且 `replacement_required=false`。
+
 `templates/latex/huawei/main.tex` 仅为内部评阅稿，不是官方提交模板。
-在当届标准文档尚未核对前，Stage 9 必须保持
+即使启用 2025 临时兼容基线，在当届标准文档尚未核对前，Stage 9 仍必须保持
 `submission_ready=false`，`render_paper.py` 也不得把该评阅稿编译成正式
 提交件。
 

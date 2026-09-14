@@ -13,8 +13,8 @@ import tempfile
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 TEMPLATE_PATH = SKILL_ROOT / "templates" / "shared" / "decision_log.json"
-CURRENT_SCHEMA = "3.3"
-SUPPORTED_INPUTS = {"3.1", "3.2", CURRENT_SCHEMA}
+CURRENT_SCHEMA = "3.4"
+SUPPORTED_INPUTS = {"3.1", "3.2", "3.3", CURRENT_SCHEMA}
 
 
 def _merge_template(template: object, existing: object) -> object:

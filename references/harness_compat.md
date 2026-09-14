@@ -129,7 +129,7 @@ python <skill>/scripts/render_paper.py --workspace paper_workspace/
 
 ## 7. 验收 checklist (harness 适配是否做对)
 
-- [ ] 启动后，不论 harness，都收集同一组 5 个启动字段，但只询问当前消息与 state 中尚缺的字段
+- [ ] 启动后，不论 harness，都先单独确认赛事与目标年份，再只加载对应竞赛包核验当届规则；规则状态确定后才收集其余启动字段
 - [ ] 所有"选 X" 决策点都呈现编号选项
 - [ ] decision_log.json schema 完全一致 (含 v6 兼容字段)
 - [ ] scripts/*.py 退出码与输出 JSON 一致

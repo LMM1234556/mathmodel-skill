@@ -1,5 +1,5 @@
 """
-score_artifact.py — L1 Critic 输出后的本地处理脚本 (v3.3 四竞赛版)
+score_artifact.py — L1 Critic 输出后的本地处理脚本 (v3.4 四竞赛版)
 
 功能:
 1. 读取 critique JSON
@@ -12,7 +12,7 @@ score_artifact.py — L1 Critic 输出后的本地处理脚本 (v3.3 四竞赛�
 
 路径协议:
 - decision_log: 默认 <cwd>/state/decision_log.json, 可用 MATHMODEL_STATE_DIR (兼容老 CUMCM_STATE_DIR) 或 --decision-log 覆盖
-- competition: 默认从 decision_log.competition 读, 缺失则 cumcm; 可用 --competition 或 MATHMODEL_COMPETITION env 覆盖
+- competition: 默认从 decision_log.competition 读；缺失时停止，必须用 --competition、环境变量或 Stage 0 状态明确指定
 - task_type: 默认从 decision_log.task_type 读, null 则 default 全 1.0; 可用 --task-type 覆盖
 
 用法:
@@ -88,8 +88,8 @@ def resolve_decision_log_path(cli_arg: str = None) -> Path:
     return Path.cwd() / "state" / "decision_log.json"
 
 
-def resolve_competition(cli_arg: str = None, decision_log: dict = None) -> str:
-    """优先级: CLI > env MATHMODEL_COMPETITION > decision_log.competition > 'cumcm'"""
+def resolve_competition(cli_arg: str = None, decision_log: dict = None) -> str | None:
+    """优先级: CLI > env MATHMODEL_COMPETITION > decision_log.competition；禁止隐式默认赛事。"""
     if cli_arg:
         return cli_arg
     env = os.environ.get("MATHMODEL_COMPETITION")
@@ -97,7 +97,7 @@ def resolve_competition(cli_arg: str = None, decision_log: dict = None) -> str:
         return env
     if decision_log and decision_log.get("competition"):
         return decision_log["competition"]
-    return "cumcm"
+    return None
 
 
 def resolve_task_type(cli_arg: str = None, decision_log: dict = None) -> str:
@@ -753,7 +753,7 @@ def main():
     parser.add_argument("--decision-log", type=str, default=None,
                         help="覆盖路径解析协议; 默认 <cwd>/state/decision_log.json")
     parser.add_argument("--competition", choices=sorted(COMPETITIONS), default=None,
-                        help="cumcm | mcm | diangong | huawei (默认从 decision_log 读, 缺失则 cumcm)")
+                        help="cumcm | mcm | diangong | huawei (默认从 decision_log 读；缺失时报错)")
     parser.add_argument("--task-type", type=str, default=None,
                         help="题型 e.g. A_optimization (默认 default 全 1.0)")
     parser.add_argument("--mode", choices=["normal", "aggregate_qi"], default="normal",
@@ -788,6 +788,12 @@ def main():
 
     competition = resolve_competition(args.competition, decision_log)
     task_type = resolve_task_type(args.task_type, decision_log)
+    if competition is None:
+        print(
+            "[FAIL] 未指定 competition。请先在 Stage 0 与参赛者确认赛事和年份并写入 "
+            "decision_log，或显式传入 --competition。"
+        )
+        return 1
     if competition not in COMPETITIONS:
         print(f"[FAIL] 未知 competition: {competition!r}")
         return 1

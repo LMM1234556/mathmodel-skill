@@ -10,6 +10,7 @@ outputs:
   - "paper.tex"
 loads_reference:
   - "competitions/<competition>/current_rules.md"
+  - "competitions/huawei/provisional_rules.json (Huawei fallback only)"
   - "competitions/<competition>/winning_patterns.md"
   - "competitions/<competition>/phrase_bank.md"
   - "competitions/<competition>/empirical.json"
@@ -35,7 +36,7 @@ claim-evidence matrix. Before inserting figures, read
 
 1. Read `competitions/<competition>/current_rules.md` when present.
 2. Open the linked official rules and confirm they are still current for the contest year.
-3. Record the verification date, source URL, page/font/file-size limits, anonymity rules, and AI-disclosure requirements in `decision_log.compliance.ruleset`.
+3. Record the target competition year, rule-basis year/status, replacement requirement, verification date, source URL, page/font/file-size limits, anonymity rules, and AI-disclosure requirements in `decision_log.compliance.ruleset`.
 4. If the repository baseline conflicts with the official source, follow the official source and flag the repository mismatch.
 
 Do not treat empirical distributions, `winning_patterns.md`, or rubric scores as official rules. They are writing aids only.
@@ -106,7 +107,7 @@ repair paragraphs that have no identifiable job or evidence relationship.
 | CUMCM | 2026 electronic paper: first page abstract, no commitment/numbering page, no TOC or identity; main text ≤30 pages; paper and support archive each ≤20 MB; AI disclosure and `AI工具使用详情.pdf` when AI is used | `xelatex` |
 | MCM/ICM | COMAP 2027: complete main solution ≤25 pages including summary, TOC, references, appendices and code; English, ≥12pt; `Report on Use of AI` follows outside the 25-page solution | `pdflatex` |
 | Diangong | Current official baseline: cover on page 1; title, abstract and keywords on page 2 with numbering starting at 1; body starts on page 3 with no TOC and is limited to 25 pages; appendices follow; A4 with 2.5 cm margins and Chinese body text in 小四; support ZIP/RAR ≤20 MB | `xelatex` |
-| Huawei Cup | The 2026 invitation fixes a 100-hour contest and requires the official standard document. The checked notice list does not yet provide the 2026 paper standard or AI rules; the repository LaTeX is internal-review only and final submission remains blocked until those files are verified | internal preview only |
+| Huawei Cup | The 2026 invitation fixes a 100-hour contest. Until the 2026 format/AI files are obtained, the verified 2025 rules may guide provisional content organization, anonymity, citations, font/page-number rehearsal, and AI annotations. Record `prior_year_provisional`; do not copy 2025 dates, filename digits, attachment limit, logos, or template into a 2026 submission. The repository LaTeX remains internal-review only | internal preview only |
 
 Problem-specific deliverables such as letters or memos also count toward the applicable page limit unless the current official problem states otherwise.
 
@@ -121,6 +122,13 @@ Because this skill itself uses an AI agent, keep `decision_log.compliance.ai_usa
 - human changes and verification performed.
 
 Use `<skill>/scripts/render_ai_usage.py` in Stage 9 only for its supported CUMCM/MCM branches. It intentionally does not invent a Diangong or Huawei Cup disclosure format; for those contests, compare the ledger with the current official notice and record the manual check. Never place API keys, tokens, private data, or credentials in the ledger.
+
+For a Huawei Cup rehearsal using the 2025 provisional baseline, also check that
+AI-assisted data analysis is annotated next to the result, AI-assisted programs
+carry a header comment with tool/version/provider/release date, model and formula
+sources are independently verified, and the team has recorded any problem-required
+prompt/output processing details. These are provisional checks, not proof of 2026
+compliance.
 
 ## 7. Render without detached sections
 

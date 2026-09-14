@@ -138,6 +138,7 @@ def run_checks(
         "templates/shared/decision_log.json",
         "templates/shared/problem_spec.md",
         "templates/shared/question_contract.json",
+        "competitions/huawei/provisional_rules.json",
         "templates/shared/matlab/mm_style.m",
         "templates/shared/matlab/mm_choose_chart.m",
         "templates/shared/matlab/mm_audit_figure.m",
@@ -179,6 +180,7 @@ def run_checks(
         SKILL_ROOT / "templates" / "shared" / "decision_log.json",
         SKILL_ROOT / "templates" / "shared" / "question_contract.json",
         SKILL_ROOT / "templates" / "shared" / "ai_usage_ledger.json",
+        SKILL_ROOT / "competitions" / "huawei" / "provisional_rules.json",
     ]
     for comp in COMPETITIONS:
         json_paths.extend((
@@ -204,12 +206,15 @@ def run_checks(
     decision = parsed.get(decision_path, {})
     decision_schema_ok = (
         isinstance(decision, dict)
-        and decision.get("_schema_version") == "3.3"
+        and decision.get("_schema_version") == "3.4"
         and isinstance(decision.get("stages"), dict)
         and isinstance(decision.get("scores"), dict)
         and isinstance(decision.get("iterations"), dict)
         and isinstance(decision.get("compliance"), dict)
         and isinstance(decision.get("compliance", {}).get("ruleset"), dict)
+        and "basis_year" in decision.get("compliance", {}).get("ruleset", {})
+        and "basis_status" in decision.get("compliance", {}).get("ruleset", {})
+        and "replacement_required" in decision.get("compliance", {}).get("ruleset", {})
         and "ai_usage" in decision.get("compliance", {})
         and isinstance(decision.get("stages", {}).get("2", {}).get("requirement_traceability"), list)
         and isinstance(decision.get("stages", {}).get("2", {}).get("question_contracts"), dict)
@@ -224,9 +229,9 @@ def run_checks(
     checks.append(_check(
         "decision-log-schema",
         decision_schema_ok,
-        "decision_log schema 3.3 with question contracts, traceability, and compliance state"
-        if decision_schema_ok else "decision_log template is not a complete v3.3 state",
-        "Restore the v3.3 decision-log template before using the workflow."
+        "decision_log schema 3.4 with rule-basis, question contracts, traceability, and compliance state"
+        if decision_schema_ok else "decision_log template is not a complete v3.4 state",
+        "Restore the v3.4 decision-log template before using the workflow."
         if not decision_schema_ok else None,
     ))
 
@@ -250,6 +255,33 @@ def run_checks(
         question_template_ok,
         "question_contract schema 1.0 with data, model, figure, approval, and invalidation state"
         if question_template_ok else "question_contract template is incomplete",
+    ))
+
+    provisional_path = SKILL_ROOT / "competitions" / "huawei" / "provisional_rules.json"
+    provisional = parsed.get(provisional_path, {})
+    provisional_ok = (
+        isinstance(provisional, dict)
+        and provisional.get("target_competition_year") == 2026
+        and provisional.get("basis_year") == 2025
+        and provisional.get("basis_status") == "prior_year_provisional"
+        and provisional.get("replacement_required") is True
+        and provisional.get("submission_authorized") is False
+        and isinstance(provisional.get("official_sources"), dict)
+        and isinstance(provisional.get("official_source_sha256"), dict)
+        and all(
+            isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
+            for value in provisional.get("official_source_sha256", {}).values()
+        )
+        and len(provisional.get("official_source_sha256", {})) == 2
+        and isinstance(provisional.get("paper_rehearsal"), dict)
+        and isinstance(provisional.get("ai_rehearsal"), dict)
+        and isinstance(provisional.get("not_carried_to_2026"), list)
+    )
+    checks.append(_check(
+        "huawei-provisional-rules",
+        provisional_ok,
+        "2025 Huawei fallback is explicit, sourced, replaceable, and non-submittable"
+        if provisional_ok else "Huawei provisional rule profile is unsafe or incomplete",
     ))
 
     comp_dir = SKILL_ROOT / "competitions" / competition
@@ -322,7 +354,8 @@ def run_checks(
             compliance = value.get("compliance") if isinstance(value, dict) else None
             valid = (
                 ok and isinstance(value, dict)
-                and value.get("_schema_version") == "3.3"
+                and value.get("_schema_version") == "3.4"
+                and "basis_status" in value.get("compliance", {}).get("ruleset", {})
                 and value.get("competition") == competition
                 and isinstance(value.get("current_stage"), int)
                 and not isinstance(value.get("current_stage"), bool)

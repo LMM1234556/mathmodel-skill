@@ -2,7 +2,7 @@
 
 > A structured Agent workflow for CUMCM, MCM/ICM, Diangong Cup, and the Huawei Cup graduate modeling contest — designed to keep a 72–100 hour project coherent from the first decision to the final submission.
 
-[![Version](https://img.shields.io/badge/version-v6.4.0-6f42c1)](./.codex-plugin/plugin.json)
+[![Version](https://img.shields.io/badge/version-v6.5.0-6f42c1)](./.codex-plugin/plugin.json)
 [![CI](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/handsomeZR-netizen/mathmodel-skill/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](./scripts/doctor.py)
 [![Competitions](https://img.shields.io/badge/CUMCM%20%7C%20MCM%2FICM%20%7C%20Diangong%20%7C%20Huawei-workflow-f97316)](./competitions/)
@@ -179,7 +179,7 @@ MCM/ICM、电工杯与华为杯的经验层明确记录为 `n=0`，不会生成�
 
 ### 规则记录日期，但不假装永久有效
 
-`current_rules.md` 保存最近核对日期和官方入口。Stage 0、8、9 仍要求重新查看当届通知，因为仓库基线不能覆盖未来变化。
+`current_rules.md` 保存最近核对日期和官方入口。Stage 0、8、9 仍要求重新查看当届通知，因为仓库基线不能覆盖未来变化。华为杯允许显式使用 2025 官方规则进行训练和预排版，但状态会标记为 `prior_year_provisional`，不能据此通过 2026 提交门。
 
 ### AI 使用从过程开始记录
 
@@ -227,7 +227,7 @@ YAML/JSON、竞赛包、反模式计数、评分边界、模板 marker、渲染 
 | **CUMCM 国赛**   | 中文；XeLaTeX / 原创 `ctexart` 电子论文模板 | 收集 91 份公开论文源样本，其中 59 份成功提取文本并进入统计；42 项维护者反模式检查 | 当前材料最完整；观察分位不是官方门槛，规则以当届通知为准    |
 | **MCM/ICM 美赛** | English；pdfLaTeX / `article`               | 16 项维护者检查；已记录 COMAP 2027 页数、字号与 AI 披露基线  | 经验层 `n=0`，不提供论文分位；提交前必须重新核对 COMAP 要求 |
 | **电工杯**       | 中文；XeLaTeX / `ctexart`                   | 12 项工程导向检查；已记录官网页序、25 页正文、支撑材料与匿名基线 | 经验层 `n=0`；当前官网未提供专门 AI 格式，仍需检查当届通知  |
-| **华为杯研究生数模** | 中文；2026 官方标准文档待发布/获取          | 已核对 100 小时赛程、MD5 与 PDF 分段提交；12 项内部反模式检查 | 经验层 `n=0`；仓库 LaTeX 仅内部评阅，不能作为提交件 |
+| **华为杯研究生数模** | 中文；2025 规则可临时预排版，仓库模板仅内部评阅 | 已核对 2026 赛程和 2025 格式/AI 规则；13 项内部反模式检查 | 经验层 `n=0`；往届基线不能令 2026 稿件提交就绪 |
 
 截至 2026-09-14，仓库已核对：
 
@@ -238,6 +238,7 @@ YAML/JSON、竞赛包、反模式计数、评分边界、模板 marker、渲染 
 - [电工杯论文规范](https://shumo.neepu.edu.cn/jszz/lwgf.htm)
 - [2026 华为杯中国研究生数学建模竞赛参赛邀请函](https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c9080189dcfa24e019dddacc24a1314?page=0)
 - [华为杯官方通知列表](https://cpipc.acge.org.cn/cw/contestNews/list/4/1)
+- [2025 华为杯开赛公告及格式、模板、AI 规则附件](https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c90801b9914a68201994b1403512e96?page=1)
 
 这些链接构成仓库当前的规则基线，但不能替代参赛当年的官方文件。
 
@@ -279,7 +280,7 @@ codex
 使用 $mathmodel-skill，开始 CUMCM 建模。
 ```
 
-首次启动时，Agent 会先确认竞赛、题目、队伍能力、截止时间和题面位置，然后创建共享状态并进入 Stage 0。工作区已经存在状态时，则从最近的检查点继续。
+首次启动时，Agent 会先单独确认竞赛和目标年份，只加载对应竞赛包核验当届规则；规则状态确定后，才继续确认题目、队伍能力、截止时间和题面位置。工作区已经存在状态时，则从最近的检查点继续。
 
 也可以安装到当前项目：
 
@@ -323,11 +324,20 @@ python -m pip install -r \
 
 正式进行论文转换与编译时，还需要安装 [Pandoc](https://pandoc.org/installing.html) 和 TeX Live 或 MiKTeX。
 
+如果只缺少 CUMCM AI 使用详情 PDF 的生成依赖，无需安装整套科学计算环境：
+
+```bash
+python -m pip install "reportlab>=4.0"
+python -m pip show reportlab
+```
+
+安装和运行测试必须使用同一个 `python`；否则常见情况是 pip 显示安装成功，脚本仍然导入失败。
+
 简化转换器仅用于 `--no-compile` 结构预检，不应作为正式论文的编译方式。
 
 - CUMCM 与电工杯使用 XeLaTeX
 - MCM/ICM 使用 pdfLaTeX
-- 华为杯当前只允许用 XeLaTeX 生成内部评阅稿；正式件等待 2026 官方标准文档
+- 华为杯可按 2025 官方规则做临时预检，并用 XeLaTeX 生成内部评阅稿；正式件仍等待 2026 官方标准文档
 
 ## 工作区产物
 
@@ -357,7 +367,7 @@ Codex 与 Claude Code 可以在同一目录中接力。`decision_log.json` 负�
 | `scripts/render_paper.py`    | 将标准 Markdown 工作区装配为对应竞赛的 TeX/PDF        | `python <skill>/scripts/render_paper.py --competition cumcm --workspace paper_workspace` |
 | `scripts/render_ai_usage.py` | 根据台账生成 CUMCM/MCM AI 使用披露材料                | `python <skill>/scripts/render_ai_usage.py --competition mcm ...` |
 | `scripts/audit_question_contracts.py` | 在计划、求解和定稿前审计逐题数据隔离与人工批准 | `python <skill>/scripts/audit_question_contracts.py --workspace . --phase execute --question Q1` |
-| `scripts/migrate_state.py`   | 将 v3.1/v3.2 状态补齐到 v3.3，并先保存原文件备份       | `python <skill>/scripts/migrate_state.py state/decision_log.json` |
+| `scripts/migrate_state.py`   | 将 v3.1/v3.2/v3.3 状态补齐到 v3.4，并先保存原文件备份 | `python <skill>/scripts/migrate_state.py state/decision_log.json` |
 | `scripts/ingest_papers.py`   | 供维护者离线更新经验统计                              | 见 [`scripts/README.md`](./scripts/README.md)                |
 
 完整 CLI 参数与依赖边界见 [`scripts/README.md`](./scripts/README.md)。
@@ -374,7 +384,7 @@ competitions/
   cumcm/                         # 规则、59 份样本统计、写作启发、评分覆盖与模板骨架
   mcm/                           # COMAP 规则基线；经验统计 n=0
   diangong/                      # 官网规则基线；经验统计 n=0
-  huawei/                        # 2026 邀请函基线；格式/AI 规则待发布；经验统计 n=0
+  huawei/                        # 2026 邀请函 + 2025 provisional_rules.json；经验统计 n=0
 references/
   stage_00_* ... stage_09_*      # 按阶段加载的执行细则
   feedback_layer1_* ... layer4_* # 阶段评分、回检、Panel 与校准
@@ -390,6 +400,16 @@ config/dim_weights.json          # 竞赛 × 题型 × 阶段的评分权重
 scripts/                         # 环境检查、评分、差分、装配、披露与维护工具
 tests/                           # 回归测试与 fixture
 ```
+
+## v6.5
+
+v6.5 为华为杯增加可审计的 2025 往届规则回退，并完善本地 PDF 依赖说明。
+
+- 启动顺序固定为“参赛者确认赛事与年份 → 仅核验对应当届官方规则 → 收集其余元信息”；不再默认 CUMCM，评分和渲染脚本在赛事缺失时直接停止。
+- 2025 官方论文格式规范和 AI 使用规定可用于训练、内容组织、匿名检查、引用检查与预排版。
+- `decision_log.json` 升级为 v3.4，分别记录目标年份、规则依据年份、依据状态和是否必须替换。
+- 往届规则状态固定为 `prior_year_provisional`；可以完成模拟终审，但不能把 2026 稿件标记为 `submission_ready`。
+- 明确 ReportLab 的最小安装命令和 Python 解释器一致性检查。
 
 ## v6.4
 

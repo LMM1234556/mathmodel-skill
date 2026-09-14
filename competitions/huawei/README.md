@@ -7,6 +7,10 @@ Status on 2026-09-14:
 - the official invitation and schedule are verified in `current_rules.md`;
 - the 2026 paper standard, AI rules, and problems are not yet available in the
   checked official notice list;
+- the official 2025 paper-format and AI-use rules are recorded as a provisional
+  rehearsal baseline only; they never make a 2026 artifact submission-ready;
+- `provisional_rules.json` is the machine-readable fallback profile and keeps
+  `submission_authorized=false` until replaced by the current-year documents;
 - `empirical.json` has `n=0`; writing and review material is maintainer guidance,
   not an award predictor;
 - the LaTeX file is an internal review template only. Final submission must use

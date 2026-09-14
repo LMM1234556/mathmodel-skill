@@ -1,9 +1,9 @@
 {
-  "_schema_version": "3.3",
-  "_doc": "跨阶段决策日志。每个阶段开头读、结尾写。L2 回检读此文件寻找跨阶段冲突。schema 与 stage_NN.md 实际写入字段一一对齐。v3.3 加入逐题 question contract、人工审批门、数据隔离和失效传播状态。",
-  "competition": "cumcm",
+  "_schema_version": "3.4",
+  "_doc": "跨阶段决策日志。每个阶段开头读、结尾写。L2 回检读此文件寻找跨阶段冲突。schema 与 stage_NN.md 实际写入字段一一对齐。v3.4 区分目标竞赛年份、规则依据年份、临时基线和提交前替换状态。",
+  "competition": null,
   "task_type": null,
-  "_competition_doc": "enum: cumcm | mcm | diangong | huawei (默认 cumcm 兼容老用户). 由 stage 0 kickoff 第一问填入。score_artifact.py / stage 文件按此字段 dispatch competitions/<comp>/* 加载。",
+  "_competition_doc": "enum: cumcm | mcm | diangong | huawei。新项目必须先由参赛者确认赛事，不设默认值；由 Stage 0 Gate S0-A 写入后，score_artifact.py / stage 文件才按此字段 dispatch competitions/<comp>/*。迁移旧项目时保留其已有值。",
   "_task_type_doc": "题型代码 (e.g. cumcm:A_optimization, mcm:A_continuous, diangong:A_engineering). 由 stage 1 选题后填入。score_artifact.py 用此字段查 config/dim_weights.json。null 时使用 default 全 1.0 权重 = 等价老逻辑。",
   "problem": null,
   "problem_meta": {
@@ -28,6 +28,10 @@
   "compliance": {
     "ruleset": {
       "competition_year": null,
+      "basis_year": null,
+      "basis_status": null,
+      "_basis_status_doc": "enum: current_official | prior_year_provisional。prior_year_provisional 只允许训练和预排版，不能令 submission_ready=true。",
+      "replacement_required": false,
       "verified_at": null,
       "official_urls": [],
       "page_limit": null,

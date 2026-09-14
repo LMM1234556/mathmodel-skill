@@ -93,7 +93,7 @@ python scripts/render_paper.py \
 
 ### `render_ai_usage.py` — AI 使用记录导出
 
-从 `decision_log.compliance.ai_usage` 生成竞赛要求的披露材料，并直接放到渲染器约定的位置。CUMCM 使用 AI 时输出到 `support_materials/AI工具使用详情.{md,pdf}`；显式未使用时只输出 `paper_workspace/AI工具未使用声明.md`，渲染器把它接在参考文献后。MCM 输出 `paper_workspace/11_ai_use_report.md`，且不重复模板提供的标题。CUMCM 的 PDF 生成依赖 ReportLab。
+从 `decision_log.compliance.ai_usage` 生成竞赛要求的披露材料，并直接放到渲染器约定的位置。CUMCM 使用 AI 时输出到 `support_materials/AI工具使用详情.{md,pdf}`；显式未使用时只输出 `paper_workspace/AI工具未使用声明.md`，渲染器把它接在参考文献后。MCM 输出 `paper_workspace/11_ai_use_report.md`，且不重复模板提供的标题。CUMCM 的 PDF 生成依赖 ReportLab；只缺这一项时运行 `python -m pip install "reportlab>=4.0"`，并确保安装与运行脚本使用同一个 `python`。
 
 ```bash
 python scripts/render_ai_usage.py \

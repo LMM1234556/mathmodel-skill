@@ -7,6 +7,7 @@ outputs:
   - "stage.9.{anti_patterns_check, compliance_checks, panel_scores, weakest_section, redo_log, red_team_record, final_pdf_path, submission_ready}"
 loads_reference:
   - "competitions/<comp>/current_rules.md"
+  - "competitions/huawei/provisional_rules.json (Huawei fallback only)"
   - "competitions/<comp>/anti_patterns.md"
   - "competitions/<comp>/rubric_overlay.json"
   - "references/feedback_layer3_panel.md"
@@ -58,6 +59,12 @@ Minimum branches:
 
 ### Huawei Cup / 中国研究生数学建模竞赛
 
+- when the 2026 format or AI files are unavailable, the 2025 official rules may
+  be used for a rehearsal audit only; record `basis_status=prior_year_provisional`
+  and `replacement_required=true`;
+- the rehearsal may check content order, pagination, fonts, anonymity, citations,
+  AI annotations and code comments, but 2025 dates, filename digits, attachment
+  limit, logos and template are not 2026 requirements;
 - use the 2026 standard document downloaded from the official contest system,
   not `templates/latex/huawei/main.tex`;
 - verify the problem ZIP and final PDF with the official MD5 tool, and preserve
@@ -68,7 +75,8 @@ Minimum branches:
   similarity, and AI-use requirements from the 2026 opening notice and files;
 - do not import page limits, covers, or AI declarations from CUMCM or Diangong;
 - if the 2026 paper standard or AI rules have not been obtained and recorded,
-  keep `submission_ready=false` and yield `block`.
+  the rehearsal can finish but `rules_verified=false`, `submission_ready=false`,
+  and the submission branch yields `block`.
 
 Any unresolved rule violation sets `submission_ready=false` and yields `block`.
 
