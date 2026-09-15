@@ -1,4 +1,4 @@
 interface:
-  display_name: "MathModel｜数学建模工作流"
-  short_description: "逐题数据隔离和人工决策门驱动的完整数学建模竞赛工作流"
-  default_prompt: "Use $mathmodel-skill to guide my team through the complete contest workflow, and require per-question approval of interpretation, data, model candidates, validation, and MATLAB figures."
+  display_name: "Huawei Cup｜华为杯数学建模"
+  short_description: "华为杯逐题数据隔离、模型决策与 MATLAB 论文工作流"
+  default_prompt: "Use $mathmodel-skill to guide my Huawei Cup team from current-rule verification through per-question interpretation, data, model, MATLAB figure, and submission review gates."

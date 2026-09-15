@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 
-COMPETITIONS = {"cumcm", "mcm", "diangong", "huawei"}
+COMPETITIONS = {"huawei"}
 PHASES = {"kickoff", "writing", "final"}
 CATEGORY_NAMES = (
     "eligibility_and_team",

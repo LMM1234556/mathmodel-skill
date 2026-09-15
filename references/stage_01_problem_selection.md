@@ -5,14 +5,13 @@ duration_h: 2-3
 inputs:
   - "stage.0.problem_scan"
   - "problem_pdfs[<topic_letters>]"
-  - "decision_log.competition"
 outputs:
   - "stage.1.{selected, rationale, rejected_alternatives, candidates_assessed, risks_identified}"
   - "root.task_type"
 loads_reference:
   - "references/rubrics.md§Stage_1"
   - "references/model_catalog.md§0"
-  - "competitions/<comp>/topic_specs.json"
+  - "competitions/huawei/topic_specs.json"
 feedback: ["L1"]
 next: stage_02_analysis
 ---
@@ -27,7 +26,7 @@ next: stage_02_analysis
 
 在当届实际题号体系内，选出**最契合团队优势 + 时间预算 + 数据可获取性**的一题，并让选择、否决与后续变更都有据可查。华为杯不得在题面发布前从往届题号或类型预判当届候选。
 
-**第一步必做**: 加载 `competitions/<comp>/topic_specs.json` 获取本竞赛的题号清单与每题 `task_type_key`; 选定后写 `decision_log.task_type` (供 stage 3+ 的 dim_weights 加权)。
+**第一步必做**: 加载 `competitions/huawei/topic_specs.json`，并以当届官方试题 ZIP 为唯一题号与子问数量来源。赛前 `topics` 为空是正常状态；不得用往届题号、题型或子问数补全。
 
 ---
 
@@ -50,21 +49,11 @@ next: stage_02_analysis
 ### Step 0: 加载竞赛题号体系 (5 min, 必做)
 
 ```bash
-# 路径: <skill>/competitions/<comp>/topic_specs.json
-# 加载后得到已维护的题号清单与 task_type_key；若华为杯 topics 为空，必须从当届试题 ZIP 提取实际候选
+# 路径: <skill>/competitions/huawei/topic_specs.json
+# topics 为空时，必须从当届官方试题 ZIP 提取实际候选
 ```
 
-题号体系总览 (引用 `topic_specs.json`):
-
-| Competition | 题号来源 | 子问数来源 | 主要交付形态 |
-|---|---|---|---|
-| cumcm | 当前竞赛包 + 当届题面 | 当届题面 | 中文论文 |
-| mcm | 当前竞赛包 + 当届题面 | 当届题面 | 英文论文 + 题目明确要求的特殊交付物 |
-| diangong | 当前竞赛包 + 当届题面 | 当届题面 | 中文工程论文 |
-| huawei | 当届试题 ZIP；赛前不预填 | 当届题面 | 中文论文 + 当届要求的提交材料 |
-
-若竞赛包 `topics` 为空但题面已经发布，直接从官方题面建立本次候选表，
-`decision_log.task_type` 暂用 `default`，除非题型已经由题面证据可靠识别。
+若 `topics` 为空但题面已经发布，直接从官方题面建立本次候选表。`decision_log.task_type` 暂用 `default`，除非题型已经由题面证据可靠识别。
 
 ### Step 1: 候选题信息提取 (45 min,可并行)
 
@@ -138,8 +127,8 @@ next: stage_02_analysis
 ```
 
 **同步写 root 字段**:
-- `decision_log.task_type` ← `topic_specs.json[selected].task_type_key` (e.g. `A_optimization` for cumcm-A)
-- `decision_log.stages.5.qi_count` ← 优先使用官方题面解析出的实际子问题数；题面未到时才用 `topic_specs.json[selected].expected_subproblem_count` 做 provisional 估计，并在 stage 2 覆盖
+- `decision_log.task_type` ← 从当届选定题目的真实任务识别；证据不足时为 `default`
+- `decision_log.stages.5.qi_count` ← 只使用当届官方题面解析出的实际子问题数；没有题面则保持 `null`，且不得进入本阶段
 - `decision_log.stages.5.qi_weights` ← `[1.0] * qi_count` (默认均匀, 用户后续可在 stage 5 调整)
 
 **决策版本**: 选定题号作为当前有效版本。若附件不可用、官方更正或新增团队约束等新证据足以改变排序，触发 L2 并向用户做一次编号确认；在 `decision_log.events.log` 记录原题号、新题号、证据、时间与受影响阶段，然后从最早受影响阶段恢复。不得因短暂犹豫无证据换题，也不得用固定时间窗阻止有依据的纠错。

@@ -27,40 +27,43 @@ def load_starter(name):
 
 classification = load_starter("classification")
 evaluation = load_starter("evaluation")
-# 本文件只测试不依赖求解器的贪心基线。若环境未安装
-# requirements 中的 cvxpy, 用空模块隔离未调用的 LP/MILP 模板。
-cvxpy_stubbed = False
-try:
-    import cvxpy  # noqa: F401
-except ModuleNotFoundError:
-    sys.modules["cvxpy"] = types.ModuleType("cvxpy")
-    cvxpy_stubbed = True
+# 本文件只测试不依赖求解器的贪心基线。始终用空模块隔离未调用的
+# LP/MILP 模板，避免测试结果受本机求解器二进制和 license 状态影响。
+previous_cvxpy = sys.modules.get("cvxpy")
+sys.modules["cvxpy"] = types.ModuleType("cvxpy")
 optimization = load_starter("optimization")
-if cvxpy_stubbed:
+if previous_cvxpy is None:
     sys.modules.pop("cvxpy", None)
+else:
+    sys.modules["cvxpy"] = previous_cvxpy
 
-statsmodels_stubbed = False
-try:
-    import statsmodels.api  # noqa: F401
-except ModuleNotFoundError:
-    statsmodels_module = types.ModuleType("statsmodels")
-    statsmodels_api = types.ModuleType("statsmodels.api")
+previous_statsmodels = sys.modules.get("statsmodels")
+previous_statsmodels_api = sys.modules.get("statsmodels.api")
+statsmodels_module = types.ModuleType("statsmodels")
+statsmodels_api = types.ModuleType("statsmodels.api")
 
-    def durbin_watson(residuals):
-        residuals = np.asarray(residuals, dtype=float)
-        denominator = float(residuals @ residuals)
-        return (float(np.diff(residuals) @ np.diff(residuals)) / denominator
-                if denominator > 0 else np.nan)
 
-    statsmodels_api.stats = types.SimpleNamespace(durbin_watson=durbin_watson)
-    statsmodels_module.api = statsmodels_api
-    sys.modules["statsmodels"] = statsmodels_module
-    sys.modules["statsmodels.api"] = statsmodels_api
-    statsmodels_stubbed = True
+def durbin_watson(residuals):
+    residuals = np.asarray(residuals, dtype=float)
+    denominator = float(residuals @ residuals)
+    return (float(np.diff(residuals) @ np.diff(residuals)) / denominator
+            if denominator > 0 else np.nan)
+
+
+# 此处只测试预测模板的确定性逻辑，用最小桩隔离 statsmodels 的本机二进制状态。
+statsmodels_api.stats = types.SimpleNamespace(durbin_watson=durbin_watson)
+statsmodels_module.api = statsmodels_api
+sys.modules["statsmodels"] = statsmodels_module
+sys.modules["statsmodels.api"] = statsmodels_api
 prediction = load_starter("prediction")
-if statsmodels_stubbed:
+if previous_statsmodels_api is None:
     sys.modules.pop("statsmodels.api", None)
+else:
+    sys.modules["statsmodels.api"] = previous_statsmodels_api
+if previous_statsmodels is None:
     sys.modules.pop("statsmodels", None)
+else:
+    sys.modules["statsmodels"] = previous_statsmodels
 
 
 class ClassificationStarterTests(unittest.TestCase):

@@ -32,7 +32,7 @@ elif critique_v0.verdict == "block":
 You are a strict {competition_label} grader for stage {stage_id} ({stage_name}).
 Score the artifact below against the 5-dim rubric.
 
-Competition: {competition} (cumcm | mcm | diangong | huawei)
+Competition: huawei
 Task type: {task_type} (e.g. A_optimization, C_data, F_policy)
 {task_type_weighting_hint}   # 见 §3.6, e.g. "重点考察 X (×1.4), 次要 Y (×0.8)"
 
@@ -94,7 +94,7 @@ OUTPUT EXACTLY THIS JSON, NO OTHER TEXT:
 ```python
 def verdict(scores, issues, weights=None):
     """
-    weights: 题型 dim 权重表 (e.g. config/dim_weights.json[cumcm][A_optimization]["3"]).
+    weights: 题型 dim 权重表 (`config/dim_weights.json[huawei][task_type][stage]`)。
              dim 不在表中时按 1.0 处理. 加权 mean = Σ(s_i × w_i) / Σ(w_i).
              min 不加权 (仍是 'any dim too low' 触发器).
              权重 clamp 到 [0.7, 1.5] 防过激.
@@ -134,9 +134,7 @@ if iter == 3 and verdict in ("refine", "refine_partial"): → 标记 carryover, 
 
 当前边界：
 
-- CUMCM：来源清单 91 份，其中 59 份进入文本提取统计；解析可能漏计或重复计数。
-- MCM/ICM：`empirical.json` 是无语料占位，不得引用其中任何数值。
-- 电工杯：`empirical.json` 是无语料占位，不得引用其中任何数值。
+- 华为杯：`empirical.json` 当前为 `n=0`，不得引用分位、区间或获奖概率。
 
 加载门槛：
 
@@ -148,26 +146,11 @@ if source.get("papers_extracted", 0) <= 0 or not empirical.get("dims"):
 
 若 critique 含 `evidence_metrics: {dim_key: value}`，`score_artifact.py` 会调用 `inject_evidence(...)` 并在控制台打印比较结果。它不会自动修改 `scores[*].evidence`、分数或 verdict。
 
-**允许的说明格式**（仅 CUMCM 且注明样本边界）：
-
-```text
-abstract_chars: 当前值=720；59 份可提取样本 p50=992、p25-p75=[748,1146]；仅作异常提示
-```
-
-**字段映射**（Stage 8 示例）：
-
-| critic dim | empirical.json key | 注意 |
-|---|---|---|
-| 1_abstract_5_paragraph | abstract_chars | 旧键名保留；评价信息闭环，不要求五段 |
-| 3_formulas_figures_citations | formula_count | 数量不代表严谨性 |
-| 3_formulas_figures_citations | figure_count | 数量不代表证据质量 |
-| 3_formulas_figures_citations | reference_count | 当前提取可能统计重复引用，不等于条目数 |
-
-MCM/ICM 与电工杯的占位文件只用于保持包结构完整。Critic 应直接依据题目、官方规则和 artifact 证据评分，不输出占位分位或估算区间。
+华为杯当前没有可用的经验分位。Critic 应直接依据当届题目、官方规则和 artifact 证据评分，不输出占位分位或估算区间。
 
 ### 3.6. 题型加权协议 (task_type dim weights)
 
-`decision_log.task_type` 由 stage 1 选题后填入 (e.g. `A_optimization` / `C_data` / `mcm:F_policy`)。`score_artifact.py` 加载 `config/dim_weights.json[competition][task_type]` 拿到 stage→dim→weight 表, 应用到 verdict 计算。
+`decision_log.task_type` 由 Stage 1 从当届题面识别，证据不足时使用 `default`。`score_artifact.py` 加载 `config/dim_weights.json[huawei][task_type]` 的 stage→dim→weight 表。
 
 **critic prompt 扩展** (在 stage 评分时, prompt 模板自动附加):
 ```
@@ -178,8 +161,7 @@ MCM/ICM 与电工杯的占位文件只用于保持包结构完整。Critic 应�
 其他维度按默认 1.0 评估。
 ```
 
-**示例** (cumcm/C_data, stage 6):
-> 本题为 cumcm/C_data, 重点考察: 验证设计与数据风险匹配 (×1.4), 输出完备性 (×1.2). 其他维度按默认 1.0 评估。旧维度键可保留，但不把多变量参数数量当作质量代理。
+题型没有可靠证据时使用 Huawei `default` 权重，不根据题号字母或往届规律猜测。
 
 权重 clamp 到 [0.7, 1.5] 防止过激扭曲分布。`task_type=default` 全 1.0, 等价老逻辑。
 

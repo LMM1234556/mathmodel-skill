@@ -332,7 +332,7 @@ class RenderCliTests(unittest.TestCase):
                 sys.executable,
                 str(ROOT / "scripts" / "render_paper.py"),
                 "--competition",
-                "mcm",
+                "huawei",
                 "--workspace",
                 str(workspace),
                 "--output-dir",
@@ -370,7 +370,7 @@ class RenderCliTests(unittest.TestCase):
             result = self.run_cli(
                 workspace,
                 output,
-                "--control-number",
+                "--huawei-team-number",
                 "2500999",
                 "--problem",
                 "C",
@@ -383,7 +383,7 @@ class RenderCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             text = (output / "main.tex").read_text(encoding="utf-8")
             self.assertIn("2500999", text)
-            self.assertNotIn("MATHMODEL_MCM_", text)
+            self.assertNotIn("MATHMODEL_HUAWEI_", text)
 
     def test_placeholder_preview_requires_explicit_switch(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -397,7 +397,7 @@ class RenderCliTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertIn("模板预览保留显式", result.stdout)
             self.assertIn(
-                "MATHMODEL_MCM_CONTROL_NUMBER",
+                "MATHMODEL_HUAWEI_TEAM_NUMBER",
                 (output / "main.tex").read_text(encoding="utf-8"),
             )
 
@@ -411,9 +411,9 @@ class RenderCliTests(unittest.TestCase):
             state_path.write_text(
                 json.dumps(
                     {
-                        "competition": "mcm",
+                        "competition": "huawei",
                         "paper_metadata": {
-                            "mcm_control_number": "2600777",
+                            "huawei_team_number": "2600777",
                             "problem": "D",
                             "title": "Workspace-Bound State",
                             "keywords": ["policy", "simulation"],

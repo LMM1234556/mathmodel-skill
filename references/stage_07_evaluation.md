@@ -9,9 +9,9 @@ inputs:
 outputs:
   - "stage.7.{strengths, limitations, improvements, generalizations}"
 loads_reference:
-  - "competitions/<competition>/winning_patterns.md"
+  - "competitions/huawei/winning_patterns.md"
   - "references/rubrics.md"
-  - "competitions/<competition>/anti_patterns.md"
+  - "competitions/huawei/anti_patterns.md"
 feedback: ["L1"]
 next: stage_08_writing
 ---

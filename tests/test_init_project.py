@@ -83,7 +83,7 @@ class ProjectInitializationTests(unittest.TestCase):
             decision_path.write_text('{"sentinel": true}\n', encoding="utf-8")
 
             with self.assertRaises(FileExistsError):
-                initializer.initialize_project(workspace, "cumcm", 2026)
+                initializer.initialize_project(workspace, "huawei", 2026)
 
             self.assertEqual(
                 json.loads(decision_path.read_text(encoding="utf-8")),
@@ -99,7 +99,7 @@ class ProjectInitializationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 initializer.initialize_project(workspace, "mcm", True)
             with self.assertRaises(ValueError):
-                initializer.initialize_project(workspace, "mcm", 1999)
+                initializer.initialize_project(workspace, "huawei", 1999)
             self.assertFalse((workspace / "state").exists())
 
 

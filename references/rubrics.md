@@ -1,6 +1,6 @@
 # 评分细则 (rubrics)
 
-> 四竞赛通用 5 维 rubric (国赛 / 美赛 / 电工杯 / 华为杯共享 stage 0-7 框架, stage 8/9 由 `competitions/<comp>/rubric_overlay.json` 特化)。L1 Critic 直接 JSON 化使用。
+> 华为杯专用的 5 维内部质量 rubric。Stage 8/9 由 `competitions/huawei/rubric_overlay.json` 特化；它不是官方评分表，也不能预测奖项。
 
 ---
 
@@ -8,52 +8,16 @@
 
 | 层级 | 来源 | 加载 |
 |------|------|------|
-| 通用基础 | 本文件 stage 0-9 表格 | 四竞赛共享 |
-| 竞赛特化 dim 名 | `competitions/<comp>/rubric_overlay.json` 的 `dim_whitelist` | score_artifact.py 自动合并 |
-| 题型 dim 权重 | `config/dim_weights.json[<comp>][<task_type>]` | compute_verdict 加权 mean |
-| 样本观察 | `competitions/<comp>/empirical.json` | Critic 评分前按竞赛加载；只作参照 |
+| 通用基础 | 本文件 stage 0-9 表格 | 华为杯十阶段共享 |
+| 华为杯特化 dim 名 | `competitions/huawei/rubric_overlay.json` 的 `dim_whitelist` | score_artifact.py 自动合并 |
+| 题型 dim 权重 | `config/dim_weights.json[huawei][<task_type>]` | compute_verdict 加权 mean |
+| 样本观察 | `competitions/huawei/empirical.json` | 当前 `n=0`，不得生成数值参照 |
 
 `task_type` 由 stage 1 选题后填入 decision_log; null 时 default 全 1.0 等价老逻辑。
 
 ---
 
-## 四竞赛约束与内部质量视角
-
-### CUMCM 国赛（内部启发式，不是官方评分权重）
-
-| 维度 | 内部关注度 | 关键检查项 |
-|------|-----|----------|
-| **摘要质量** | 高 | 任务覆盖 / 可追溯的量化结果 / 验证与边界 / 信息密度 |
-| **模型建立** | 高 | 与问题契合 / 假设有支撑 / 数学严谨 / 设计真实可解释 |
-| **求解与结果** | 高 | 算法合理 / 代码可复现 / 结果可视化 / 现实意义 |
-| **写作呈现** | 中 | 章节完整 / 公式编号规范 / 图表清晰 / 语言流畅 |
-| **创新性** | 中 | 真实机制改进 / 跨学科融合 / 合理的子问题复用 |
-
-### MCM/ICM 美赛（官方约束 + 内部质量检查）
-
-> 当前没有可用于统计校准的语料；`competitions/mcm/empirical.json` 只是结构占位，不能把其中数值用于评分。
-
-| 维度 | 关键检查项 |
-|------|----------|
-| **Summary Sheet** | 第 1 页 / 方法与结果可追溯 / 限制诚实 |
-| **Approach & Modeling** | 问题契合 / 假设支撑 / 设计选择有证据 |
-| **Solution & Results** | 算法 / 复现性 / 与模型风险匹配的验证 |
-| **Communication** | 写作清晰 / 图表 self-contained / 术语精确 |
-| **Problem-specific deliverable** | 仅题目明确要求时加入 / 面向目标读者 / 保留证据与 caveat |
-
-### 电工杯（内部工程质量检查）
-
-> 当前没有可用于统计校准的语料；`competitions/diangong/empirical.json` 只是结构占位，不能把其中数值用于评分。
-
-| 维度 | 关键检查项 |
-|------|----------|
-| **工程实用性** | 落地可行 / 适用时的成本估算 / 实施条件 |
-| **物理意义** | 数值带 kW/kWh/% / 工程语义 |
-| **数据完整性** | 关键字段可追溯 / 未用字段说明取舍 / 预处理有据 |
-| **多场景对比** | 场景覆盖主要工程风险 / 参数扰动有现实依据 |
-| **写作呈现** | 引用格式按当年规则 / 工程惯用图表 / 单位与图例完整 |
-
-### 华为杯研究生数模（当前规则约束 + 内部质量检查）
+## 华为杯内部质量视角
 
 > 当前没有可用于统计校准的语料；`competitions/huawei/empirical.json` 为
 > `n=0` 占位。2026 论文标准与 AI 规则在本次核对时仍待发布/获取，不能从
@@ -275,7 +239,7 @@ L2 触发: 末尾跨阶段回检 stage 3 的模型选择前提是否被本节结
 
 ## 与 winning_patterns / anti_patterns / empirical 的对应
 
-本文件 rubric 项 ↔ `competitions/<comp>/winning_patterns.md` 段落 (路径按 decision_log.competition dispatch):
+本文件 rubric 项 ↔ `competitions/huawei/winning_patterns.md` 段落:
 - abstract.* (stage 8 dim 1) → patterns §1, §9 + anti_patterns §A
 - paper.section_completeness (stage 8 dim 2) → patterns §2 + anti_patterns §I
 - paper.figure_density → patterns §3 + anti_patterns §E
@@ -286,4 +250,4 @@ L2 触发: 末尾跨阶段回检 stage 3 的模型选择前提是否被本节结
 - evaluation.limitations_real (stage 7 dim 2) → patterns §8 + anti_patterns §H
 - evaluation.real_critique → patterns §8
 
-字数、图表数和公式数不作为官方硬阈值。CUMCM 的 `empirical.json` 记录 91 份来源中的 59 份可提取子集，只能用于异常提示。MCM/ICM 与电工杯的 `empirical.json` 均为无语料结构占位，不得引用其中数值。若 critique 提供 `evidence_metrics`，`score_artifact.py` 会打印可用的分位比较；它不会据此自动改分或把样本观察当作官方阈值。
+字数、图表数和公式数不作为官方硬阈值。华为杯 `empirical.json` 当前为 `n=0`；Critic 不得输出论文分位、估计区间或获奖概率。

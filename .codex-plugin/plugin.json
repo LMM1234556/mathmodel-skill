@@ -1,40 +1,36 @@
 {
   "name": "mathmodel-skill",
-  "version": "6.7.0",
-  "description": "A stateful ten-stage workflow with per-question human approval, data isolation, candidate-model comparison, evidence-based MATLAB figures, paper traceability, and compliance review for CUMCM, MCM/ICM, Diangong Cup, and Huawei Cup graduate modeling.",
+  "version": "7.0.0",
+  "description": "A Huawei Cup-specific ten-stage workflow with per-question human approval, data isolation, candidate-model comparison, MATLAB figures, paper traceability, and current-rule compliance review.",
   "author": {
-    "name": "handsomeZR-netizen",
-    "url": "https://github.com/handsomeZR-netizen"
+    "name": "LMM1234556",
+    "url": "https://github.com/LMM1234556"
   },
-  "homepage": "https://github.com/handsomeZR-netizen/mathmodel-skill",
-  "repository": "https://github.com/handsomeZR-netizen/mathmodel-skill",
+  "homepage": "https://github.com/LMM1234556/mathmodel-skill",
+  "repository": "https://github.com/LMM1234556/mathmodel-skill",
   "license": "MIT",
   "keywords": [
     "math-modeling",
-    "cumcm",
-    "mcm",
-    "icm",
     "huawei-cup",
     "graduate-modeling",
     "codex-skill"
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "MathModel｜数学建模工作流",
-    "shortDescription": "让四类数学建模竞赛从题意到终稿形成可核验链路",
-    "longDescription": "A Codex-native mathematical modeling competition workflow that isolates every subproblem's interpretation, data, candidate models, validation, and figures behind human approval gates. Ten staged checkpoints, persistent state, deterministic audits, MATLAB evidence figures, paper traceability, and compliance-first review keep long-running collaboration coherent.",
-    "developerName": "handsomeZR-netizen",
+    "displayName": "Huawei Cup｜华为杯数学建模",
+    "shortDescription": "华为杯逐题隔离、模型决策与 MATLAB 论文工作流",
+    "longDescription": "A Huawei Cup-focused Codex workflow that isolates every subproblem's interpretation, data, candidate models, validation, and figures behind human approval gates. Ten staged checkpoints, persistent state, deterministic audits, MATLAB evidence figures, paper traceability, and current-rule review keep the 100-hour contest workflow coherent.",
+    "developerName": "LMM1234556",
     "category": "Education",
     "capabilities": [
       "Interactive",
       "Write"
     ],
-    "websiteURL": "https://github.com/handsomeZR-netizen/mathmodel-skill",
+    "websiteURL": "https://github.com/LMM1234556/mathmodel-skill",
     "defaultPrompt": [
-      "Use $mathmodel-skill to guide my CUMCM team from kickoff to submission.",
-      "Use $mathmodel-skill to compare MCM problem choices and record the decision.",
       "Use $mathmodel-skill to prepare my Huawei Cup team and audit problem interpretation.",
-      "Use $mathmodel-skill to run a compliance-first final review of our modeling paper."
+      "Use $mathmodel-skill to compare current Huawei Cup problem choices and record the decision.",
+      "Use $mathmodel-skill to run a compliance-first final review of our Huawei Cup paper."
     ],
     "brandColor": "#10A37F"
   }

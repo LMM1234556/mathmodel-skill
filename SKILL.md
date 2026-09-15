@@ -1,13 +1,13 @@
 ---
 name: mathmodel-skill
-description: CUMCM 国赛、MCM/ICM 美赛、电工杯与“华为杯”中国研究生数学建模竞赛的端到端协作与质量控制工作流。Use when a user explicitly works on one of these contests or asks to run/review a modeling-competition project from problem interpretation through modeling, evidence-based figures, paper writing, compliance, and submission review. Provides per-question human approval, source-anchored interpretation, default-deny data isolation, comparable model candidates, persistent state, MATLAB figure evidence, and deterministic audits. Do not trigger for generic model selection, ordinary data analysis, or non-competition paper review.
+description: “华为杯”中国研究生数学建模竞赛专用的端到端协作与质量控制工作流。Use when a user is preparing for or participating in the Huawei Cup China Postgraduate Mathematical Contest in Modeling and needs source-anchored problem interpretation, per-question human approval, default-deny data isolation, comparable model selection, MATLAB figures, paper writing, compliance, or final review. Do not trigger for CUMCM, MCM/ICM, Diangong Cup, generic model selection, ordinary data analysis, or non-competition paper review.
 ---
 
-# mathmodel-skill — 数学建模四竞赛工作流 (v6.7)
+# mathmodel-skill — 华为杯数学建模工作流 (v7.0)
 
-10 阶段把 72–100 小时的竞赛协作变成可恢复、可检查的流程。用户回答关键问题，agent 维护状态与脚本。每阶段产出经过 rubric 自评、定向精修与跨阶段一致性回检；Stage 8–9 先遵守当届官方规则，再做多视角终审。CUMCM 包含 91 份来源文档，其中 59 份进入文本统计；MCM/电工杯/华为杯经验统计明确为 `n=0`，不提供合成分位。
+10 阶段把华为杯约 100 小时的竞赛协作变成可恢复、可检查的流程。用户回答关键问题，agent 维护状态与脚本。流程重点控制三类高风险错误：题意误读、跨题串用数据、模型与图表未经参赛者确认。Stage 8–9 必须重新核验当届官方规则；仓库没有获奖概率模型，华为杯经验统计为 `n=0`。
 
-**v6.7 更新**: Gate S0-A 在参赛者确认赛事与年份后调用 `init_project.py` 原子初始化工作区；脚本没有默认赛事/年份，拒绝覆盖已有状态，并让空白规则快照停在核验门前。保留 v6.6 的逐类规则快照与三阶段失败关闭审计。
+**v7.0 范围**：当前发行版只支持华为杯。其他赛事资料若仍存在于仓库，只是未来扩展的非活动历史资源，不得加载、不得作为当前规则来源，也不属于本版本的质量承诺。
 
 ---
 
@@ -27,7 +27,7 @@ Codex 优先按 skill 目录发现本文件:
 
 ## Harness 兼容 (Claude Code / Codex)
 
-本 skill v6.7 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
+本 skill v7.0 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
 
 | harness | 入口文件 | 用户交互工具 | 状态文件 |
 |---------|---------|-------------|---------|
@@ -56,29 +56,29 @@ Codex 优先按 skill 目录发现本文件:
 | 类型 | 位置 | 例 |
 |------|------|-----|
 | skill 内通用 | skill 根目录的相对路径 | `references/stage_05_subproblem_loop.md`, `templates/shared/decision_log.json` |
-| **竞赛特化** | `competitions/<comp>/...` 按 decision_log.competition dispatch | `competitions/cumcm/winning_patterns.md`, `competitions/mcm/abstract_template.md` |
-| **LaTeX 模板** | `templates/latex/<comp>/main.tex` | `templates/latex/cumcm/main.tex`, `templates/latex/mcm/main.tex` |
+| **华为杯规则与写作资源** | `competitions/huawei/...` | `competitions/huawei/current_rules.md` |
+| **内部评阅模板** | `templates/latex/huawei/main.tex` | 仅内部评阅，不是官方提交模板 |
 | 用户产物 | 用户工作目录的相对路径 | `<cwd>/state/`, `<cwd>/results/`, `<cwd>/figures/`, `<cwd>/paper_workspace/` |
 | state 持久化 | `<cwd>/state/decision_log.json` | 各 stage 必读必写 |
-| 环境变量 | `MATHMODEL_STATE_DIR` (兼容 `CUMCM_STATE_DIR`) / `MATHMODEL_COMPETITION` 可覆盖 | scripts 用此变量 |
+| 环境变量 | `MATHMODEL_STATE_DIR` | scripts 用此变量 |
 
-约定: `<skill>/` = skill 安装目录, `<cwd>/` = 用户 cwd, `<comp>/` = 当前竞赛 (cumcm | mcm | diangong | huawei)。
+约定: `<skill>/` = skill 安装目录，`<cwd>/` = 用户工作目录；`decision_log.competition` 必须固定为 `huawei`。
 
 ---
 
 ## Quick Start (用户首次说"开始建模")
 
 ```
-1. 一段话介绍 (≤50 字): "启动数学建模工作流, 10 阶段 + 四竞赛, 全程问答式."
+1. 一段话介绍 (≤50 字): "启动华为杯数学建模工作流，先核验年份与规则，再逐题确认。"
 
-2. **Gate S0-A — 先识别赛事**。从用户消息或已有 state 获取 `competition` 与目标年份；缺失时只询问这两项。竞赛选项为 cumcm 国赛 / mcm 美赛 / diangong 电工杯 / huawei 华为杯研究生数模。不得默认选择 cumcm，也不得在赛事尚未确定时加载任一竞赛包或询问规则版本。
+2. **Gate S0-A — 先确认适用范围与年份**。确认用户参加的是“华为杯”中国研究生数学建模竞赛，并取得目标年份。若用户说的是其他比赛，说明本版本不支持并停止，不得套用华为杯规则。年份缺失时只询问年份。
 
 3. 自动初始化 (agent 自动完成, 不要让用户编辑 json):
-   - 两个字段确认后运行 `python <skill>/scripts/init_project.py --workspace <cwd> --competition <comp> --year <year>`
-   - 脚本同时创建 `decision_log.json`、空白 `rules_snapshot.json` 与工作目录；不得省略参数或用环境默认值替代参赛者回答
+   - 确认后运行 `python <skill>/scripts/init_project.py --workspace <cwd> --competition huawei --year <year>`
+   - 脚本同时创建 `decision_log.json`、空白 `rules_snapshot.json` 与工作目录；不得省略目标年份或改用其他 competition
    - 已存在任一状态文件 → 脚本拒绝覆盖；读取现有 schema、competition 与 current_stage 决定恢复或迁移，不重新初始化
 
-4. **Gate S0-B — 再核验当届规则**。读取 `references/rule_verification_protocol.md`，只加载已选定的 `competitions/<comp>/current_rules.md`，打开官方链接核对目标年份并建立 `<cwd>/state/rules_snapshot.json`。逐类区分 `confirmed` / `unknown` / `not_applicable`，向参赛者展示缺项与冲突，再运行 `audit_ruleset.py --phase kickoff`。往届基线不是初始赛事选项，也不得自动启用。
+4. **Gate S0-B — 再核验当届规则**。读取 `references/rule_verification_protocol.md` 与 `competitions/huawei/current_rules.md`，打开研创网官方链接核对目标年份并建立 `<cwd>/state/rules_snapshot.json`。逐类区分 `confirmed` / `unknown` / `not_applicable`，向参赛者展示缺项与冲突，再运行 `audit_ruleset.py --phase kickoff`。2025 临时基线不得自动启用，也不能授权正式提交。
 
 5. 规则状态确定后，再合并询问题号、队员数与擅长、截止时间、题目 PDF 路径等尚缺启动信息。题号依当届题面动态生成；题面未发布时使用“未公布”，不得从往届预填。
 
@@ -89,22 +89,15 @@ Codex 优先按 skill 目录发现本文件:
 ```
 1. 读 `<cwd>/state/decision_log.json` 的 schema、competition 与 current_stage
 2. 若 schema=3.1、3.2、3.3 或 3.4，先自动运行 `python <skill>/scripts/migrate_state.py <cwd>/state/decision_log.json`；保留备份后再继续。其他未知 schema 不自动改写
-3. 加载对应 stage_NN.md (按需结合 competitions/<comp>/* 内容)
+3. 加载对应 stage_NN.md，按需结合 `competitions/huawei/*`
 4. 不重复读 winning_patterns
 ```
 
 ---
 
-## 四竞赛 × 三模式 矩阵
+## 华为杯 × 三模式
 
-时长 / 语言 / 模板 / 数据状态 由 competition 决定; token 预算 / 反馈深度由 mode 决定。两者**正交组合**。
-
-| Competition | 时长 | 语言 | LaTeX | 规则基线 | 经验数据状态 |
-|---|---|---|---|---|---|
-| cumcm | 72h | 中文 | xelatex / 原创 ctexart | CUMCM 2026 | 91 来源文档 / 59 可提取样本 |
-| mcm | 96h | English | pdflatex / article | COMAP 2027 | `n=0`，无论文分位 |
-| diangong | 72h | 中文 | xelatex / ctex | 官网 2026-03-21 页面 | `n=0`，无论文分位 |
-| huawei | 100h | 中文 | 2025 规则仅供临时预排版；仓库 LaTeX 仅内部评阅 | 2026 邀请函 + 2025 provisional | `n=0`，无论文分位 |
+华为杯当前按 100 小时中文竞赛准备。2026 邀请函已经核验；若当届论文标准或 AI 规则仍不可用，2025 文件只能作为显式 `prior_year_provisional` 演练基线，内部 LaTeX 不能作为提交件。反馈深度由 mode 决定。
 
 | Mode | 上下文策略 | 反馈层 | 用途 |
 |---|---|---|---|
@@ -124,7 +117,7 @@ Codex 优先按 skill 目录发现本文件:
 
 | # | 阶段 | reference | 时长 | 反馈 | 竞赛差异点 |
 |---|------|-----------|------|------|-----------|
-| 0 | 团队启动 + 资料预扫 | `stage_00_kickoff.md` | 1h | L1 | 时长 / 语言 / 编译器 / 题号体系 |
+| 0 | 团队启动 + 资料预扫 | `stage_00_kickoff.md` | 1h | L1 | 确认年份、规则状态与官方题面 |
 | 1 | 选题 (多题对比 → 1) | `stage_01_problem_selection.md` | 2-4h | L1 | 题号体系 (A-E/A-F/A-B) + task_type 写入 |
 | 2 | 原文追踪、独立复读与逐题数据边界 | `stage_02_analysis.md` | 2-3h | L1 + 题意确认 | 题面锚点、依赖图与 question contract |
 | 3 | 逐题模型候选、验证与预执行审批 | `stage_03_model_selection.md` | 2-4h | L1 + 人工门禁 | 基线/主流/进阶候选按同一任务比较 |
@@ -132,7 +125,7 @@ Codex 优先按 skill 目录发现本文件:
 | 5 | **受控子问题循环** Q1..Qn + per-Qi 加权聚合 | `stage_05_subproblem_loop.md` | 按题目分配 | 三个审批门 + L1 | 默认拒绝跨题数据；模型复评；MATLAB 图表确认 |
 | 6 | 全局灵敏度 / 稳健性 | `stage_06_robustness.md` | 2-3h | L1 + L2 | 按题面风险选择工程、数据或数学参数 |
 | 7 | 模型评价 + 推广 | `stage_07_evaluation.md` | 1-2h | L1 | 通用 |
-| 8 | 证据驱动论文写作 + 合规装配 | `stage_08_writing.md` | 12-30h | L1 + L2 | Claim IDs、反向提纲、AI 披露与 LaTeX 模板 |
+| 8 | 证据驱动论文写作 + 合规装配 | `stage_08_writing.md` | 12-30h | L1 + L2 | Claim IDs、反向提纲、AI 台账与官方标准文档 |
 | 9 | 提交合规 + 反向追踪 + Panel | `stage_09_review.md` | 2-6h | L1 + L3 panel | requirement/claim/figure 审计 + panel |
 
 ---
@@ -141,19 +134,19 @@ Codex 优先按 skill 目录发现本文件:
 
 **只在进入阶段 N 时加载** `references/stage_NN_*.md`。**切勿**一次性全读。
 
-各阶段额外加载 (按需 + 按 competition 切换):
+各阶段额外加载（只使用华为杯资源）:
 - 每阶段开头: `<cwd>/state/decision_log.json` 必读
 - 每阶段结尾: `<cwd>/state/decision_log.json` 必写 (核心决策 + 5 维评分)
 - stage 1-9: `references/rubrics.md` 对应章节 (L1 评分用)
-- **stage 1**: `competitions/<comp>/topic_specs.json` (题号 → task_type 映射)
+- **stage 1**: `competitions/huawei/topic_specs.json`；赛前 topics 为空，必须从当届试题 ZIP 建立题号与 task_type
 - **stage 2**: `references/problem_understanding_protocol.md` + `references/question_contract_protocol.md` + `templates/shared/{problem_spec.md,question_contract.json}`
 - **stage 3, 5**: `references/question_contract_protocol.md` + `references/model_catalog.md`；Stage 3 运行 `audit_question_contracts.py --phase plan`，Stage 5 求解前运行 `--phase execute --question <Qi>`，完成后运行 `--phase final --question <Qi>`
 - **stage 5 / 8 / 9**: `references/visualization_protocol.md`; 所有定量图必须由 MATLAB 生成，复制 `templates/shared/matlab/` 使用 `mm_choose_chart`、`mm_style` 与 `mm_export_figure`
 - **stage 5**: per-Qi 评分跑完后调 `scripts/score_artifact.py --mode aggregate_qi` 聚合
-- **stage 0 / 8 / 9**: 读取 `references/rule_verification_protocol.md`，核对 `competitions/<comp>/current_rules.md` 中的官方链接，维护 `state/rules_snapshot.json`；依次运行 `audit_ruleset.py --phase kickoff|writing|final`
-- **stage 8**: `competitions/<comp>/{winning_patterns, phrase_bank, abstract_template, paper_skeleton}.md`
+- **stage 0 / 8 / 9**: 读取 `references/rule_verification_protocol.md`，核对 `competitions/huawei/current_rules.md` 中的官方链接，维护 `state/rules_snapshot.json`；依次运行 `audit_ruleset.py --phase kickoff|writing|final`
+- **stage 8**: `competitions/huawei/{winning_patterns,phrase_bank,abstract_template,paper_skeleton}.md`
 - **stage 8 / 9**: `references/paper_quality_protocol.md`，维护 Claim IDs、证据矩阵与反向提纲
-- **stage 8 经验锚点**: `competitions/<comp>/empirical.json` 只作评分前参考；CUMCM 为 59 份可提取样本的观察分位，MCM/电工杯/华为杯为 `n=0` 占位且不得推断数值门槛
+- **stage 8 经验锚点**: `competitions/huawei/empirical.json` 为 `n=0`，不得输出论文分位、获奖概率或伪经验阈值
 - **stage 9**: 先做规则合规门，再用 `anti_patterns.md` 与 `rubric_overlay.json` 的 panel personas
 - 触发反馈时: 对应 `references/feedback_layer*.md`
 - harness 适配差异 (Codex 用户必读): `references/harness_compat.md`
@@ -185,7 +178,7 @@ Codex 优先按 skill 目录发现本文件:
 | `refine_partial` *(stage 5)* | 任 Qi.min < 7, 其他 Qi 已 pass | 仅 refine 该 Qi, 不动其他 |
 | `carryover` | iter == 3 仍 refine | 进下一阶段, 标记由 L2 处理 |
 
-`weighted_mean` = Σ(s_i × w_i) / Σ(w_i), 权重来自 `config/dim_weights.json[<comp>][<task_type>]` (clamp [0.7, 1.5]); `task_type=default` 全 1.0 等价老逻辑。
+`weighted_mean` = Σ(s_i × w_i) / Σ(w_i)，权重来自 `config/dim_weights.json[huawei][<task_type>]`（clamp [0.7, 1.5]）；题型未可靠识别时使用 `default`。
 
 此定义在 `feedback_layer1_critic.md` / `rubrics.md` / `scripts/score_artifact.py` 三处必须**完全一致**。
 
@@ -224,7 +217,7 @@ L2 跨阶段回检 (stage 5/6/8 末尾) 读这个文件主动找冲突, 触发**
 ## 用户指令快捷
 
 - "进入 stage N" / "重做 stage N" → 跳转
-- "切到 mcm" / "切到 cumcm" / "切到 diangong" / "切到 huawei" → 改 decision_log.competition (注意已有 state 兼容性)
+- “切到其他比赛” → 说明 v7.0 仅支持华为杯并停止；不得改写已有项目的 competition
 - "升级到 championship" → 启用 L3 + L4 + red-team
 - "切到 fast" → 关闭迭代
 - "回退到 stage M" → 读 decision_log, 回退 current_stage 并清理 ≥M 节点
@@ -235,20 +228,11 @@ L2 跨阶段回检 (stage 5/6/8 末尾) 读这个文件主动找冲突, 触发**
 
 ## 数据来源声明
 
-- `competitions/cumcm/`: 91 份来源文档，59 份成功文本提取并进入观察分位；现有提取有局限，不能解释为官方阈值或获奖预测
-- `competitions/mcm/`: 规则基线已按 COMAP 2027 核对；经验模式是维护者启发，empirical 为 `n=0`
-- `competitions/diangong/`: 官网参赛规则与论文规范已于 2026-07-22 核对；经验模式是维护者启发，empirical 为 `n=0`
 - `competitions/huawei/`: 2026 邀请函与官方通知列表已于 2026-09-14 核对；2025 官方格式与 AI 规则可作显式临时基线，但当届文件发布后必须替换，内部模板不得作为提交件，empirical 为 `n=0`
 - 通用模型清单 `references/model_catalog.md` 跨竞赛复用
-
-当前 `scripts/ingest_papers.py` 是维护期归档工具，不能直接重建四个竞赛包的 `empirical.json`。新增语料前先补来源 provenance、提取 QA 与分组样本量。
 
 ---
 
 ## 与外部资源的关系
 
-核心工作流可离线运行；当届规则与问题要求必须从官方来源重新核对。下列资源可作人工补充:
-- 国赛: `personqianduixue/Math_Model`, `datawhalechina/intro-mathmodel`, `dxs.moe.gov.cn` 优秀论文展廊
-- 美赛: COMAP 官网 `comap.com`, `MCM Tutorial` (Frank Giordano)
-- 电工杯: 中国电机工程学会论文集
-- 华为杯: 中国研究生创新实践系列大赛官网与中国研究生数学建模竞赛公众号
+核心工作流可离线运行，但当届规则与问题要求必须从官方来源重新核对。官方优先来源为中国研究生创新实践系列大赛管理平台及当届竞赛系统。公众号或学校转载只能用于发现线索，关键规则必须回到官方页面或官方附件核实。

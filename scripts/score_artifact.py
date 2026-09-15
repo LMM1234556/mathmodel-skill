@@ -1,5 +1,5 @@
 """
-score_artifact.py — L1 Critic 输出后的本地处理脚本 (v3.5 四竞赛版)
+score_artifact.py — 华为杯 L1 Critic 输出后的本地处理脚本
 
 功能:
 1. 读取 critique JSON
@@ -41,6 +41,7 @@ VALID_VERDICTS = {
 
 VALID_VARIANTS = {"stage_level", "per_qi"}
 COMPETITIONS = {"cumcm", "mcm", "diangong", "huawei"}
+ACTIVE_COMPETITIONS = {"huawei"}
 
 # Baseline DIM_WHITELIST (cumcm-flavored; 其他竞赛通过 rubric_overlay.json dim_whitelist 覆盖)
 DIM_WHITELIST = {
@@ -752,8 +753,8 @@ def main():
     parser.add_argument("--max-iter", type=int, default=3)
     parser.add_argument("--decision-log", type=str, default=None,
                         help="覆盖路径解析协议; 默认 <cwd>/state/decision_log.json")
-    parser.add_argument("--competition", choices=sorted(COMPETITIONS), default=None,
-                        help="cumcm | mcm | diangong | huawei (默认从 decision_log 读；缺失时报错)")
+    parser.add_argument("--competition", choices=sorted(ACTIVE_COMPETITIONS), default=None,
+                        help="当前发行版仅支持 huawei（默认从 decision_log 读）")
     parser.add_argument("--task-type", type=str, default=None,
                         help="题型 e.g. A_optimization (默认 default 全 1.0)")
     parser.add_argument("--mode", choices=["normal", "aggregate_qi"], default="normal",
@@ -794,8 +795,8 @@ def main():
             "decision_log，或显式传入 --competition。"
         )
         return 1
-    if competition not in COMPETITIONS:
-        print(f"[FAIL] 未知 competition: {competition!r}")
+    if competition not in ACTIVE_COMPETITIONS:
+        print(f"[FAIL] 当前发行版只支持 competition='huawei'，收到 {competition!r}")
         return 1
 
     try:

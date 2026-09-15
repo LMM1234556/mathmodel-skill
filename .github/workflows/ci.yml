@@ -43,7 +43,4 @@ jobs:
 
       - name: Run competition preflights
         run: |
-          python scripts/doctor.py --competition cumcm --skip-tools
-          python scripts/doctor.py --competition mcm --skip-tools
-          python scripts/doctor.py --competition diangong --skip-tools
           python scripts/doctor.py --competition huawei --skip-tools

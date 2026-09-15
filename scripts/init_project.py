@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize a modeling-contest workspace after contest and year are confirmed."""
+"""Initialize a Huawei Cup modeling workspace after the target year is confirmed."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from typing import Any
 SKILL_ROOT = Path(__file__).resolve().parent.parent
 DECISION_TEMPLATE = SKILL_ROOT / "templates" / "shared" / "decision_log.json"
 RULES_TEMPLATE = SKILL_ROOT / "templates" / "shared" / "rules_snapshot.json"
-COMPETITIONS = ("cumcm", "mcm", "diangong", "huawei")
+COMPETITIONS = ("huawei",)
 WORKSPACE_DIRS = ("state", "results", "figures", "paper_workspace")
 
 
@@ -92,7 +92,12 @@ def initialize_project(
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path, required=True)
-    parser.add_argument("--competition", choices=COMPETITIONS, required=True)
+    parser.add_argument(
+        "--competition",
+        choices=COMPETITIONS,
+        required=True,
+        help="Current release supports only huawei; the explicit value is persisted for auditability.",
+    )
     parser.add_argument("--year", type=int, required=True)
     parser.add_argument("--json", action="store_true", dest="as_json")
     args = parser.parse_args()

@@ -3,8 +3,8 @@
   "_doc": "跨阶段决策日志。每个阶段开头读、结尾写。L2 回检读此文件寻找跨阶段冲突。schema 与 stage_NN.md 实际写入字段一一对齐。v3.5 增加逐类、逐来源的规则快照审计；新项目由 init_project.py 从本模板初始化。",
   "competition": null,
   "task_type": null,
-  "_competition_doc": "enum: cumcm | mcm | diangong | huawei。新项目必须先由参赛者确认赛事，不设默认值；由 Stage 0 Gate S0-A 调用 init_project.py 写入后，score_artifact.py / stage 文件才按此字段 dispatch competitions/<comp>/*。迁移旧项目时保留其已有值。",
-  "_task_type_doc": "题型代码 (e.g. cumcm:A_optimization, mcm:A_continuous, diangong:A_engineering). 由 stage 1 选题后填入。score_artifact.py 用此字段查 config/dim_weights.json。null 时使用 default 全 1.0 权重 = 等价老逻辑。",
+  "_competition_doc": "v7.0 固定为 huawei。由 Stage 0 Gate S0-A 在确认目标年份后调用 init_project.py 写入；其他比赛必须停止，不得改写此字段套用华为杯流程。",
+  "_task_type_doc": "从当届华为杯选定题目的真实任务识别。证据不足时使用 default；不得根据题号字母或往届规律猜测。",
   "problem": null,
   "problem_meta": {
     "year": null,
@@ -14,9 +14,10 @@
     "team_size": null
   },
   "paper_metadata": {
-    "_doc": "最终渲染元数据。CUMCM 要求 title/keywords；MCM 要求 mcm_control_number/problem/title/keywords；电工杯要求 diangong_registration_number/problem/title/keywords；华为杯内部评阅稿记录 huawei_team_number/problem/title/keywords，正式提交字段仍以当届标准文档为准。CLI 显式参数可覆盖这些值。不得填写 XXXX、X、TITLE OF YOUR PAPER、keyword1、关键词1 等占位符。",
+    "_legacy_doc": "以下两个字段仅为 state schema 3.5 的迁移兼容保留，华为杯流程不得读取或填写。",
     "mcm_control_number": null,
     "diangong_registration_number": null,
+    "_doc": "华为杯内部评阅元数据。记录 huawei_team_number/problem/title/keywords；正式提交字段仍以当届标准文档为准。不得填写 XXXX、X、keyword1、关键词1 等占位符。",
     "huawei_team_number": null,
     "problem": null,
     "title": null,

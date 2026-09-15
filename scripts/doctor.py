@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Preflight checks for the mathmodel-skill package and local toolchain."""
+"""Preflight checks for the Huawei Cup mathmodel-skill and local toolchain."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parent.parent
-COMPETITIONS = ("cumcm", "mcm", "diangong", "huawei")
+COMPETITIONS = ("huawei",)
 COMPETITION_FILES = (
     "README.md",
     "winning_patterns.md",
@@ -28,18 +28,8 @@ COMPETITION_FILES = (
     "empirical.json",
     "current_rules.md",
 )
-RENDER_ENGINES = {
-    "cumcm": "xelatex",
-    "mcm": "pdflatex",
-    "diangong": "xelatex",
-    "huawei": "xelatex",
-}
-REQUIRED_TEX_FILES = {
-    "cumcm": ("ctexart.cls",),
-    "mcm": (),
-    "diangong": ("ctexart.cls",),
-    "huawei": ("ctexart.cls",),
-}
+RENDER_ENGINES = {"huawei": "xelatex"}
+REQUIRED_TEX_FILES = {"huawei": ("ctexart.cls",)}
 MODELING_MODULES = ("numpy", "scipy", "pandas", "sklearn")
 CORE_SECTION_MARKERS = {
     "abstract",
@@ -53,12 +43,7 @@ CORE_SECTION_MARKERS = {
     "8_references",
     "appendix_code",
 }
-EXPECTED_RENDER_MARKERS = {
-    "cumcm": CORE_SECTION_MARKERS | {"cumcm_no_ai_statement"},
-    "mcm": CORE_SECTION_MARKERS | {"ai_use_report"},
-    "diangong": CORE_SECTION_MARKERS,
-    "huawei": CORE_SECTION_MARKERS,
-}
+EXPECTED_RENDER_MARKERS = {"huawei": CORE_SECTION_MARKERS}
 
 
 @dataclass(frozen=True)
@@ -119,6 +104,10 @@ def run_checks(
     require_renderer: bool = False,
     require_modeling: bool = False,
 ) -> list[Check]:
+    if competition not in COMPETITIONS:
+        raise ValueError(
+            f"当前版本只支持 competition='huawei'，收到 {competition!r}"
+        )
     checks: list[Check] = []
 
     py_ok = sys.version_info >= (3, 10)
@@ -158,9 +147,6 @@ def run_checks(
         "scripts/audit_ruleset.py",
         "scripts/audit_question_contracts.py",
         "templates/shared/ai_usage_ledger.json",
-        "templates/latex/cumcm/main.tex",
-        "templates/latex/mcm/main.tex",
-        "templates/latex/diangong/main.tex",
         "templates/latex/huawei/main.tex",
     )
     missing = [item for item in required_paths if not (SKILL_ROOT / item).is_file()]
@@ -486,11 +472,12 @@ def run_checks(
 
 
 def _print_human(checks: list[Check]) -> None:
-    symbols = {"pass": "✓", "warn": "!", "fail": "✗"}
+    # ASCII markers keep the default command usable in Windows GBK terminals.
+    symbols = {"pass": "[OK]", "warn": "[WARN]", "fail": "[FAIL]"}
     for item in checks:
         print(f"{symbols[item.status]} {item.name}: {item.detail}")
         if item.fix and item.status != "pass":
-            print(f"  ↳ {item.fix}")
+            print(f"  -> {item.fix}")
     counts = {status: sum(item.status == status for item in checks) for status in symbols}
     print(
         f"\nSummary: {counts['pass']} passed, "

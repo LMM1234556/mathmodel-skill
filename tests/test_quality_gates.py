@@ -68,7 +68,7 @@ class QualityGatePackageTests(unittest.TestCase):
         stage0 = (ROOT / "references" / "stage_00_kickoff.md").read_text(
             encoding="utf-8"
         )
-        identify = stage0.index("Step 1A: 赛事识别")
+        identify = stage0.index("Step 1A: 适用范围与年份确认")
         verify = stage0.index("Step 1B: 当届规则核验")
         remaining = stage0.index("Step 1C: 其余元信息")
         self.assertLess(identify, verify)

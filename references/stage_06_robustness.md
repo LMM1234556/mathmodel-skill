@@ -9,9 +9,9 @@ inputs:
 outputs:
   - "stage.6.{params_varied_jointly, method, deltas, robust_intervals, stability_verdict, failure_warning, L2_backtrack, figures}"
 loads_reference:
-  - "competitions/<competition>/winning_patterns.md"
+  - "competitions/huawei/winning_patterns.md"
   - "references/rubrics.md"
-  - "competitions/<competition>/anti_patterns.md"
+  - "competitions/huawei/anti_patterns.md"
 loads_template:
   - "templates/shared/code_starter/simulation.py"
   - "templates/shared/sensitivity_table.md"

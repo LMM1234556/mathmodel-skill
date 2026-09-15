@@ -6,7 +6,7 @@
 
 A single reviewer can become anchored to its own earlier scores. L3 asks several isolated reviewers to inspect different evidence, then maps every concern back to a specific section. The objective is a safer final submission, not a simulated ranking.
 
-The active personas come from `competitions/<competition>/rubric_overlay.json["panel_personas"]`. Their labels and weights are competition-specific, while the output schema and aggregation rules below stay the same.
+The active personas come from `competitions/huawei/rubric_overlay.json["panel_personas"]`. Their labels and weights are internal review settings, not official judging weights.
 
 ## Preconditions
 
@@ -86,9 +86,9 @@ Check entry commands, dependency assumptions, seeds, data paths, train/test leak
 
 Check whether a fast reader can identify the problem, method, quantified result, validation, and limitation; whether figures/tables are readable and cited; and whether claims match the evidence. Do not enforce a fixed paragraph, figure, formula, or citation count.
 
-### Competition-specific reader
+### Huawei Cup fast reader
 
-Use the fifth persona from the active overlay: CUMCM fast-read clarity, MCM stakeholder communication when required, or Diangong engineering feasibility. For an MCM problem without a policy letter/memo, replace the `policy` persona with an independent reproducibility reader at weight `1.0`.
+Use the fifth persona from the Huawei overlay to check whether a judge can recover the task, method, quantified answer, validation, and boundary during a rapid read. Do not ask this persona to predict an award.
 
 ## Aggregation
 

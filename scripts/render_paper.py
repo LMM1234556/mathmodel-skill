@@ -1,5 +1,5 @@
 """
-render_paper.py — markdown 中间产物 → 最终 PDF (v3.5 四竞赛版)
+render_paper.py — Markdown 中间产物 → 华为杯内部评阅稿
 
 功能:
 1. 读 stage 8 各节 markdown 产出 (<cwd>/paper_workspace/)
@@ -729,8 +729,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--workspace", type=str, required=True,
                         help="<cwd>/paper_workspace/ 目录, 含 01..10_*.md 节文件")
-    parser.add_argument("--competition", type=str, default=None,
-                        help="cumcm | mcm | diangong | huawei (默认从 decision_log 读；缺失时报错)")
+    parser.add_argument("--competition", choices=("huawei",), default=None,
+                        help="当前发行版仅支持 huawei（默认从 decision_log 读）")
     parser.add_argument("--decision-log", type=str, default=None,
                         help="可选: 指定 decision_log.json 路径用于自动检测 competition")
     parser.add_argument("--control-number", "--mcm-control-number",
@@ -797,8 +797,8 @@ def main():
             "decision_log，或显式传入 --competition。"
         )
         return 1
-    if competition not in TEMPLATE_MAP:
-        print(f"[FAIL] 未知 competition: {competition!r}; 支持 {sorted(TEMPLATE_MAP)}")
+    if competition != "huawei":
+        print(f"[FAIL] 当前发行版只支持 competition='huawei'，收到 {competition!r}")
         return 1
     print(f"competition: {competition}")
 

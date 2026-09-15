@@ -286,7 +286,7 @@ class ScoreArtifactTests(unittest.TestCase):
                     "--decision-log",
                     str(decision_log_path),
                     "--competition",
-                    "cumcm",
+                    "huawei",
                 ],
                 cwd=ROOT,
                 capture_output=True,
@@ -336,7 +336,7 @@ class ScoreArtifactTests(unittest.TestCase):
                     "--decision-log",
                     str(decision_log_path),
                     "--competition",
-                    "cumcm",
+                    "huawei",
                     "--max-iter",
                     "3",
                 ],
@@ -383,7 +383,7 @@ class ScoreArtifactTests(unittest.TestCase):
                             "--decision-log",
                             str(decision_log_path),
                             "--competition",
-                            "cumcm",
+                            "huawei",
                         ],
                         cwd=ROOT,
                         capture_output=True,
@@ -727,7 +727,7 @@ class DoctorTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("--competition", result.stderr)
 
-    def test_all_competition_preflights_pass(self) -> None:
+    def test_huawei_preflight_passes(self) -> None:
         for competition in doctor.COMPETITIONS:
             with self.subTest(competition=competition):
                 checks = doctor.run_checks(competition, check_tools=False)
@@ -738,17 +738,11 @@ class DoctorTests(unittest.TestCase):
                 ]
                 self.assertEqual(failures, [])
 
-    def test_mcm_doctor_expects_ai_report_marker(self) -> None:
-        checks = doctor.run_checks("mcm", check_tools=False)
-        marker_check = next(item for item in checks if item.name == "render-markers")
-        self.assertEqual(marker_check.status, "pass")
-        self.assertEqual(marker_check.detail, "mcm: 11/11 section markers")
-
-    def test_cumcm_doctor_expects_no_ai_statement_marker(self) -> None:
-        checks = doctor.run_checks("cumcm", check_tools=False)
-        marker_check = next(item for item in checks if item.name == "render-markers")
-        self.assertEqual(marker_check.status, "pass")
-        self.assertEqual(marker_check.detail, "cumcm: 11/11 section markers")
+    def test_doctor_rejects_non_huawei_competitions(self) -> None:
+        for competition in ("cumcm", "mcm", "diangong"):
+            with self.subTest(competition=competition):
+                with self.assertRaisesRegex(ValueError, "只支持"):
+                    doctor.run_checks(competition, check_tools=False)
 
     def test_huawei_doctor_expects_internal_review_markers(self) -> None:
         checks = doctor.run_checks("huawei", check_tools=False)
@@ -766,30 +760,30 @@ class DoctorTests(unittest.TestCase):
                     encoding="utf-8"
                 )
             )
-            state["competition"] = "mcm"
+            state["competition"] = "huawei"
             state_path.write_text(json.dumps(state), encoding="utf-8")
 
             checks = doctor.run_checks(
-                "mcm", workspace=workspace, check_tools=False
+                "huawei", workspace=workspace, check_tools=False
             )
             workspace_check = next(
                 item for item in checks if item.name == "workspace-state"
             )
             self.assertEqual(workspace_check.status, "pass")
 
-            mismatch = doctor.run_checks(
-                "cumcm", workspace=workspace, check_tools=False
-            )
+            state["competition"] = "mcm"
+            state_path.write_text(json.dumps(state), encoding="utf-8")
+            mismatch = doctor.run_checks("huawei", workspace=workspace, check_tools=False)
             mismatch_check = next(
                 item for item in mismatch if item.name == "workspace-state"
             )
             self.assertEqual(mismatch_check.status, "fail")
 
-            state["competition"] = "mcm"
+            state["competition"] = "huawei"
             state["current_stage"] = True
             state_path.write_text(json.dumps(state), encoding="utf-8")
             boolean_stage = doctor.run_checks(
-                "mcm", workspace=workspace, check_tools=False
+                "huawei", workspace=workspace, check_tools=False
             )
             boolean_check = next(
                 item for item in boolean_stage if item.name == "workspace-state"
@@ -802,7 +796,7 @@ class DoctorTests(unittest.TestCase):
                 sys.executable,
                 str(ROOT / "scripts" / "doctor.py"),
                 "--competition",
-                "mcm",
+                "huawei",
                 "--skip-tools",
                 "--require-renderer",
             ],
@@ -820,7 +814,7 @@ class DoctorTests(unittest.TestCase):
 
         with mock.patch.object(doctor.shutil, "which", side_effect=fake_which):
             checks = doctor.run_checks(
-                "mcm", check_tools=True, require_renderer=True
+                "huawei", check_tools=True, require_renderer=True
             )
 
         pandoc_check = next(item for item in checks if item.name == "pandoc")
@@ -833,7 +827,7 @@ class DoctorTests(unittest.TestCase):
             mock.patch.object(doctor, "_tex_file_available", return_value=False),
         ):
             checks = doctor.run_checks(
-                "cumcm", check_tools=True, require_renderer=True
+                "huawei", check_tools=True, require_renderer=True
             )
 
         support_check = next(
