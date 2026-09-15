@@ -2,13 +2,13 @@
 
 > 华为杯中国研究生数学建模竞赛专用的 Codex Skill：把题意理解、逐题数据、模型决策、MATLAB 图表、论文证据和提交规则放进一条可恢复、可审计的工作流。
 
-[![Version](https://img.shields.io/badge/version-v7.0.0-6f42c1)](./.codex-plugin/plugin.json)
+[![Version](https://img.shields.io/badge/version-v7.1.0-6f42c1)](./.codex-plugin/plugin.json)
 [![Scope](https://img.shields.io/badge/scope-Huawei%20Cup-f97316)](./competitions/huawei/)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f)](./LICENSE)
 
 ## 当前范围
 
-v7.0 只支持“华为杯”中国研究生数学建模竞赛。
+v7.1 只支持“华为杯”中国研究生数学建模竞赛。
 
 - 不接受 CUMCM、MCM/ICM 或电工杯项目；
 - 不把其他比赛的页数、模板、AI 披露格式套入华为杯；
@@ -42,6 +42,11 @@ v7.0 只支持“华为杯”中国研究生数学建模竞赛。
 | 7 | 模型评价和推广边界 | 所有评价有证据 |
 | 8 | 证据驱动论文写作 | Claim—result—figure 可追溯 |
 | 9 | 规则、证据、图表和 PDF 终审 | 当届官方文件完整才能提交 |
+
+格式检查不是一个勾选框。工作流会分别确认官方模板和封面、字体和段落、
+分页和页数、附录和支撑材料、PDF 属性与命名，并写入
+`paper_workspace/format_audit.md`。官方文件未给出论文总页数时，记录
+“未规定”，不能把摘要页数或其他比赛的限制套过来。
 
 ## 三条核心约束
 

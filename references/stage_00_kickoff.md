@@ -78,9 +78,10 @@ python <skill>/scripts/init_project.py \
 
 ### Step 1B: 当届规则核验 (3 min) — 第二个交互门
 
-读取 `references/rule_verification_protocol.md`，打开初始化器生成的 `<cwd>/state/rules_snapshot.json`，再读取 `competitions/huawei/current_rules.md`。打开其中研创网官方来源，核验目标年份的参赛资格、赛程、题目下载、论文格式、匿名、提交文件、提交流程、AI、引用与原创性要求；仓库经验值不能覆盖官方通知。
+读取 `references/rule_verification_protocol.md`，打开初始化器生成的 `<cwd>/state/rules_snapshot.json`，再读取 `competitions/huawei/current_rules.md`。打开其中研创网官方来源，核验目标年份的参赛资格、赛程、题目下载、官方模板/封面、字体/段落、分页/页数、匿名、附录/支撑材料、提交文件、提交流程、AI、引用与原创性要求；仓库经验值不能覆盖官方通知。
 
 - 每类规则在快照中只能标为 `confirmed`、`unknown` 或 `not_applicable`；`confirmed` 必须绑定事实与官方来源 ID，`not_applicable` 也必须有官方来源和理由。
+- 格式四类必须独立展示，不得合并成“格式已确认”。摘要页数与全文页数必须分开；若当届完整文件没有规定某项，只能记录“已检查的官方文件未规定”，不得猜值。
 - 当届规则完整：写入 `basis_year=competition_year`、`basis_status=current_official`、`replacement_required=false`。
 - 当届规则不完整：先向参赛者展示“类别—状态—关键事实—来源—影响”表及阻断阶段，再让其选择“等待当届规则”或“采用可用的往届临时基线”。不得自动启用往届规则。
 - 只有参赛者明确选择华为杯 2025 临时基线时，才加载 `competitions/huawei/provisional_rules.json`，并写入 `competition_year=2026`、`basis_year=2025`、`basis_status=prior_year_provisional`、`replacement_required=true`。

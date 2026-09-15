@@ -73,7 +73,21 @@ class RulesetAuditTests(unittest.TestCase):
         findings = auditor.audit(snapshot, "final")
         self.assertTrue(any(item.severity == "error" for item in findings))
         self.assertTrue(any(item.field == "competition" for item in findings))
-        self.assertTrue(any(item.field == "categories.paper_format" for item in findings))
+        self.assertTrue(
+            any(item.field == "categories.typography_and_paragraphs" for item in findings)
+        )
+
+    def test_format_categories_cannot_be_collapsed_into_one_generic_status(self) -> None:
+        snapshot = valid_snapshot()
+        snapshot["categories"].pop("pagination_and_page_limits")
+        findings = auditor.audit(snapshot, "final")
+        self.assertTrue(
+            any(
+                item.field == "categories.pagination_and_page_limits"
+                and item.severity == "error"
+                for item in findings
+            )
+        )
 
     def test_complete_current_official_snapshot_passes_final(self) -> None:
         self.assertEqual(auditor.audit(valid_snapshot(), "final"), [])

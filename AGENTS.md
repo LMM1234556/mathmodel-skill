@@ -12,7 +12,7 @@ This repository contains the `mathmodel-skill` product. When working inside this
 
 ## Maintenance rules
 
-- Preserve the trigger boundary: v7.0 is only for the Huawei Cup graduate modeling contest, not CUMCM, MCM/ICM, Diangong Cup, generic data analysis, or ordinary paper review.
+- Preserve the trigger boundary: v7.1 is only for the Huawei Cup graduate modeling contest, not CUMCM, MCM/ICM, Diangong Cup, generic data analysis, or ordinary paper review.
 - Treat official contest rules as time-sensitive. Keep a verification date and primary source in `competitions/huawei/current_rules.md`; official current-year material always overrides repository guidance.
 - Treat empirical distributions and `winning_patterns.md` as observations or maintainer heuristics, never official thresholds or award predictors.
 - Keep user artifacts relative to the user's working directory (`state/`, `results/`, `figures/`, `paper_workspace/`, `paper_output/`). Resolve repository resources relative to the installed skill root.

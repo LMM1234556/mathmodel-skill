@@ -15,7 +15,9 @@
 | `07_sensitivity.md` | 验证、稳健性、不确定性与失效区域 |
 | `08_evaluation.md` | 优点、局限、改进代价、推广和最终建议 |
 | `09_references.md` | 正文实际引用且已核验的来源 |
-| `10_appendix.md` | 必要代码、运行说明与提交材料清单 |
+| `10_appendix.md` | 仅供内部评阅的条件式附录草稿；当届规则或题面允许/要求时才进入正式论文 |
+| `supporting_materials_manifest.md` | 单独上传文件的名称、内容、哈希、大小、题面依据和论文引用位置；默认不进入论文 |
 
-内部还需维护：`claim_evidence_matrix.md`、`reverse_outline.md`、
+不得因为内部渲染器存在 `10_appendix.md` 就推定正式 PDF 允许附录，也不得把
+单独上传的程序或计算结果自动并入正文。内部还需维护：`claim_evidence_matrix.md`、`reverse_outline.md`、
 `figures/figure_registry.json`。这些文件默认不进入论文，但用于终审反向追踪。

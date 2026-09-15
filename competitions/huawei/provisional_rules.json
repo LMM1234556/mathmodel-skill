@@ -6,29 +6,43 @@
   "basis_status": "prior_year_provisional",
   "replacement_required": true,
   "submission_authorized": false,
-  "verified_at": "2026-09-14",
+  "verified_at": "2026-09-15",
   "official_sources": {
     "opening_notice": "https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c90801b9914a68201994b1403512e96?page=1",
     "paper_format_pdf": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=65a3475c51e94c2fb8dea617bb1a310c",
+    "official_paper_template": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=4fa722047c6b4c0bbcc600fcac4233d1",
     "ai_rules_pdf": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=e3edba52b87c4bf7922f737c35c14b74"
   },
   "official_source_sha256": {
     "paper_format_pdf": "127d0b629d2475f97ed1e206dd7d34ccb6a9e0c56a75e7493bcd969c9dfa03c0",
+    "official_paper_template": "2fe99e580833602e49a714bda1883ab56ebfcebfc48f77aa74053e23a6185fb0",
     "ai_rules_pdf": "6441795b250bed6d15f936e4088cb7086f0e9d8f09df016f7be186cf2b7d8779"
   },
   "paper_rehearsal": {
     "problem_letters": ["A", "B", "C", "D", "E", "F"],
     "abstract_max_pages": 2,
+    "total_paper_page_limit": null,
+    "total_paper_page_limit_status": "not_stated_in_2025_format_spec_or_opening_notice",
     "english_abstract_required": false,
     "page_numbering": "摘要页为第1页，页脚中部连续阿拉伯数字",
     "header_allowed": false,
     "title_font": "三号黑体",
     "level_1_heading_font": "四号黑体，居中",
     "chinese_body_font": "小四宋体，单倍行距",
+    "other_paragraph_rules_status": "not_stated; preserve the official template rather than inventing values",
+    "official_cover_required": true,
+    "official_cover_removable": false,
+    "official_cover_logos_replaceable": false,
     "identity_rule": "除官方封面外不得出现学校、队员姓名、队伍编号或其他身份标志",
     "citation_rule": "正文方括号编号，参考文献按引用顺序；书籍注明页码，网络来源注明访问日期，引用程序注明来源",
     "pdf_uncompressed": true,
-    "support_archive_limit_mb_2025_only": 50
+    "pdf_filename": "题号字母+队伍编号.pdf",
+    "supporting_material_trigger": "题面明确要求，或团队认为有助评审且在论文中注明",
+    "support_archive_type": "rar",
+    "support_archive_filename": "题号字母+队伍编号.rar",
+    "support_archive_limit_mb_2025_only": 50,
+    "in_paper_appendix_rule_status": "not_stated",
+    "paper_pdf_size_limit_status": "not_stated"
   },
   "ai_rehearsal": {
     "role": "辅助而非主导，不能替代独立思考和核心创新",

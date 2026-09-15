@@ -147,6 +147,7 @@ def run_checks(
         "scripts/audit_ruleset.py",
         "scripts/audit_question_contracts.py",
         "templates/shared/ai_usage_ledger.json",
+        "templates/shared/format_audit.md",
         "templates/latex/huawei/main.tex",
     )
     missing = [item for item in required_paths if not (SKILL_ROOT / item).is_file()]
@@ -238,12 +239,14 @@ def run_checks(
     )
     expected_rule_categories = {
         "eligibility_and_team", "schedule", "problem_and_download",
-        "paper_format", "anonymity", "submission_files",
+        "official_template_and_cover", "typography_and_paragraphs",
+        "pagination_and_page_limits", "anonymity",
+        "appendix_and_supporting_materials", "submission_files",
         "submission_process", "ai_use", "citation_and_originality",
     }
     rules_template_ok = (
         isinstance(rules_template, dict)
-        and rules_template.get("_schema_version") == "1.0"
+        and rules_template.get("_schema_version") == "1.1"
         and rules_template.get("competition") is None
         and rules_template.get("competition_year") is None
         and isinstance(rules_template.get("sources"), list)
@@ -255,7 +258,7 @@ def run_checks(
     checks.append(_check(
         "rules-snapshot-schema",
         rules_template_ok,
-        "rules_snapshot schema 1.0 covers nine source-backed rule categories"
+        "rules_snapshot schema 1.1 covers twelve source-backed rule categories"
         if rules_template_ok else "rules_snapshot template is incomplete",
     ))
 
@@ -296,7 +299,7 @@ def run_checks(
             isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
             for value in provisional.get("official_source_sha256", {}).values()
         )
-        and len(provisional.get("official_source_sha256", {})) == 2
+        and len(provisional.get("official_source_sha256", {})) == 3
         and isinstance(provisional.get("paper_rehearsal"), dict)
         and isinstance(provisional.get("ai_rehearsal"), dict)
         and isinstance(provisional.get("not_carried_to_2026"), list)

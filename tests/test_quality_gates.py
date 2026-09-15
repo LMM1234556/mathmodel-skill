@@ -63,6 +63,8 @@ class QualityGatePackageTests(unittest.TestCase):
         self.assertIn("question_contract_protocol.md", stage2)
         self.assertIn("paper_quality_protocol.md", stage8)
         self.assertIn("visualization_protocol.md", stage8)
+        self.assertIn("format_audit.md", stage8)
+        self.assertIn("format_audit.md", stage9)
         self.assertIn("evidence_traceability_passed", stage9)
 
         stage0 = (ROOT / "references" / "stage_00_kickoff.md").read_text(
@@ -73,6 +75,22 @@ class QualityGatePackageTests(unittest.TestCase):
         remaining = stage0.index("Step 1C: 其余元信息")
         self.assertLess(identify, verify)
         self.assertLess(verify, remaining)
+
+    def test_format_audit_separates_critical_official_requirements(self) -> None:
+        audit = (ROOT / "templates" / "shared" / "format_audit.md").read_text(
+            encoding="utf-8"
+        )
+        for item in (
+            "中文正文字体与字号",
+            "首行缩进、段前段后",
+            "摘要页数上限",
+            "论文总页数上限",
+            "正文内附录是否允许及计页方式",
+            "支撑材料内容、格式、命名、大小",
+        ):
+            self.assertIn(item, audit)
+        self.assertIn("`unknown` 表示尚未核实", audit)
+        self.assertIn("`not_stated`", audit)
 
     def test_decision_log_v35_exposes_quality_gate_state(self) -> None:
         state = json.loads(
@@ -309,9 +327,14 @@ class HuaweiPackTests(unittest.TestCase):
         self.assertTrue(rules["replacement_required"])
         self.assertFalse(rules["submission_authorized"])
         self.assertIn("official_template", rules["not_carried_to_2026"])
-        self.assertEqual(len(rules["official_source_sha256"]), 2)
+        self.assertEqual(len(rules["official_source_sha256"]), 3)
         self.assertTrue(
             all(len(value) == 64 for value in rules["official_source_sha256"].values())
+        )
+        self.assertIsNone(rules["paper_rehearsal"]["total_paper_page_limit"])
+        self.assertIn(
+            "not_stated",
+            rules["paper_rehearsal"]["in_paper_appendix_rule_status"],
         )
 
     def test_internal_review_template_wires_all_sections(self) -> None:

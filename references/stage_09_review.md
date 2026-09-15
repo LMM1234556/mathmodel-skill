@@ -15,7 +15,7 @@ loads_reference:
   - "references/problem_understanding_protocol.md"
   - "references/paper_quality_protocol.md"
   - "references/visualization_protocol.md"
-loads_template: ["target-year official standard document", "templates/latex/huawei/ (internal review only)"]
+loads_template: ["target-year official standard document", "templates/shared/format_audit.md", "templates/latex/huawei/ (internal review only)"]
 feedback: ["L1", "L3_panel", "red_team_in_championship"]
 next: SUBMIT
 ---
@@ -50,6 +50,15 @@ Minimum Huawei Cup checks:
   and the submission branch yields `block`.
 
 Any unresolved rule violation sets `submission_ready=false` and yields `block`.
+
+Then open `paper_workspace/format_audit.md` and compare the actual final PDF and
+supporting package row by row. A row without an official source/anchor, observed
+value, and pass result is incomplete. Check fonts, heading and paragraph styles,
+page size/margins, headers/page numbers, abstract and total-page limits, cover,
+anonymity, appendix placement, PDF name/size/compression, and every supporting
+material requirement. If the official documents do not state a total-paper limit,
+record `not_stated` with the reviewed sources; never substitute another contest's
+limit. Any `unknown`, `fail`, or `blocked` row keeps `submission_ready=false`.
 
 ## 2. Run the active anti-pattern checklist
 
@@ -139,7 +148,7 @@ The `null` values above are schema placeholders only. Replace every one with an 
 - requirement-to-deliverable and claim-to-evidence reverse traces passed;
 - every paper figure passed source, unit, encoding, caption, and final-size review;
 - all high-severity panel findings resolved;
-- PDF compiled and visually inspected;
+- PDF compiled and visually inspected, and every row of `format_audit.md` has an official basis, observed value, evidence, and pass result;
 - AI disclosure and supporting materials complete when required;
 - `decision_log.stages.9.submission_ready == true`.
 

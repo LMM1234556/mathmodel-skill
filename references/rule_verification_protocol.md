@@ -29,8 +29,18 @@ For each category, use exactly one status:
   apply; record both the source and rationale.
 
 The required categories are eligibility/team, schedule, problem/download,
-paper format, anonymity, submission files, submission process, AI use, and
-citation/originality. Never turn silence about AI into `not_applicable`.
+official template/cover, typography/paragraphs, pagination/page limits,
+anonymity, appendix/supporting materials, submission files, submission process,
+AI use, and citation/originality. Never collapse the format categories into one
+generic “format checked” statement, and never turn silence about AI into
+`not_applicable`.
+
+For format-sensitive categories, inspect the official opening notice, paper
+format specification, standard document/template, submission manual, and the
+selected problem statement. Record “the reviewed documents do not state a
+total-paper limit” as a sourced fact; do not convert it into a guessed limit or
+confuse it with the abstract page limit. A missing current-year document leaves
+the affected category `unknown` and blocks final submission.
 
 ## 3. Expose gaps and conflicts to the participant
 

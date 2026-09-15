@@ -17,8 +17,11 @@ CATEGORY_NAMES = (
     "eligibility_and_team",
     "schedule",
     "problem_and_download",
-    "paper_format",
+    "official_template_and_cover",
+    "typography_and_paragraphs",
+    "pagination_and_page_limits",
     "anonymity",
+    "appendix_and_supporting_materials",
     "submission_files",
     "submission_process",
     "ai_use",
@@ -74,8 +77,8 @@ def audit(
         return [_finding("error", "root", "snapshot root must be an object")]
 
     findings: list[Finding] = []
-    if snapshot.get("_schema_version") != "1.0":
-        findings.append(_finding("error", "_schema_version", "expected 1.0"))
+    if snapshot.get("_schema_version") != "1.1":
+        findings.append(_finding("error", "_schema_version", "expected 1.1"))
 
     competition = snapshot.get("competition")
     competition_year = snapshot.get("competition_year")

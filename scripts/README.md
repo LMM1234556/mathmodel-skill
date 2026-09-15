@@ -29,7 +29,7 @@ python scripts/doctor.py --competition huawei --require-renderer --require-model
 
 ### `audit_ruleset.py`
 
-检查华为杯目标年份、官方来源、九类关键规则、未知项和临时回退批准。`final` 要求当届官方规则完整。
+检查华为杯目标年份、官方来源、十二类关键规则、未知项和临时回退批准。格式规则被拆成官方模板/封面、字体/段落、分页/页数、附录/支撑材料；`final` 要求当届官方规则完整。
 
 ```bash
 python scripts/audit_ruleset.py \
