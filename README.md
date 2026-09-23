@@ -187,7 +187,7 @@ mathmodel-skill/
 
 ## 来源与归属
 
-本仓库是在原开源 `mathmodel-skill` 基础上的二次开发，保留原许可证与第三方声明，详见 [`LICENSE`](LICENSE) 和 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。简历或作品集中应表述为“基于开源项目二次开发”，并明确自己完成的规则审计、逐题合同、MATLAB 图表和工程化改进。
+本仓库是在原开源 `mathmodel-skill` 基础上的二次开发，保留原许可证与第三方声明，详见 [`LICENSE`](LICENSE) 和 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
 ## 后续扩展原则
 
