@@ -6,6 +6,14 @@ that merely resembles an award paper.
 
 ## Build the evidence map before prose
 
+Apply an artifact lock before drafting: executable code and its recorded inputs
+produce immutable result IDs; validation attaches to those IDs; only then may
+paper prose cite them. Keep the method/result boundary explicit: “模型建立”
+contains the implemented mathematical method and assumptions but no observed
+scores or rankings, while “模型求解” contains only values loaded from registered
+outputs. A changed input, script, model, seed, split or result invalidates the
+dependent prose, figures, abstract claims and conclusions until rechecked.
+
 Create `paper_workspace/claim_evidence_matrix.md`:
 
 | Claim ID | Claim | Requirement IDs | Evidence path | Figure/table/equation | Validation | Scope/limitation | Target section |
@@ -43,6 +51,9 @@ report, interpret, compare, or limit. A strong results paragraph usually follows
   credible alternative.
 - Use precise model names. Do not add “improved”, “adaptive”, “hybrid”, or
   “intelligent” unless the implemented mechanism and comparison justify it.
+- Treat AI-generated prose as a draft for team verification and rewriting, not
+  as submission-ready text. Preserve the official AI-use annotations and do not
+  edit merely to conceal AI involvement.
 - Replace vague praise (“效果良好”, “具有实际意义”) with a metric, condition,
   decision implication, or a narrower statement.
 - Cite sources for external facts and methods; do not cite the model's own
@@ -82,6 +93,8 @@ Before Stage 9:
 - the abstract maps only to locked body evidence;
 - limitations identify affected conclusions and conditions, not generic
   self-criticism;
+- every novelty claim maps to the audited change, baseline, implementation and
+  comparison evidence, or is downgraded to problem-specific adaptation;
 - no unresolved high-severity contradiction remains between problem spec,
   decision log, code, results, figures, and prose.
 

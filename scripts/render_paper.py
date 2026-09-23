@@ -808,8 +808,8 @@ def main():
         and not args.no_compile
     ):
         print(
-            "[FAIL] 华为杯当前仅有内部评阅模板。2026 当届《竞赛论文标准文档》"
-            "尚未核对，禁止生成可能被误当作提交件的 PDF；请使用 --no-compile 做结构预检。"
+            "[FAIL] 此脚本只包含华为杯内部评阅 LaTeX。2026 官方提交模板为 .doc，"
+            "禁止生成可能被误当作官方提交件的 PDF；请使用 --no-compile 做结构预检。"
         )
         return 1
 

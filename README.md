@@ -2,13 +2,13 @@
 
 > 华为杯中国研究生数学建模竞赛专用的 Codex Skill：把题意理解、逐题数据、模型决策、MATLAB 图表、论文证据和提交规则放进一条可恢复、可审计的工作流。
 
-[![Version](https://img.shields.io/badge/version-v7.1.0-6f42c1)](./.codex-plugin/plugin.json)
+[![Version](https://img.shields.io/badge/version-v7.3.0-6f42c1)](./.codex-plugin/plugin.json)
 [![Scope](https://img.shields.io/badge/scope-Huawei%20Cup-f97316)](./competitions/huawei/)
 [![License](https://img.shields.io/badge/license-MIT-2ea44f)](./LICENSE)
 
 ## 当前范围
 
-v7.1 只支持“华为杯”中国研究生数学建模竞赛。
+v7.3 只支持“华为杯”中国研究生数学建模竞赛。
 
 - 不接受 CUMCM、MCM/ICM 或电工杯项目；
 - 不把其他比赛的页数、模板、AI 披露格式套入华为杯；
@@ -82,19 +82,19 @@ Python、求解器或其他工具可以计算，但绘图数据必须保存为 C
 
 当前规则基线见 [`competitions/huawei/current_rules.md`](competitions/huawei/current_rules.md)。
 
-2026 邀请函已经核验，但论文标准、AI 规则和题面必须在开赛时重新从研创网或竞赛系统获取。若只采用 2025 临时基线：
+2026 开赛公告、论文格式、官方 `.doc` 模板、提交手册和 AI 规则已经核验，机器可读基线见 [`competitions/huawei/official_rules_2026.json`](competitions/huawei/official_rules_2026.json)。正式项目应使用：
 
 ```json
 {
   "competition_year": 2026,
-  "basis_year": 2025,
-  "basis_status": "prior_year_provisional",
-  "replacement_required": true,
-  "submission_authorized": false
+  "basis_year": 2026,
+  "basis_status": "current_official",
+  "replacement_required": false,
+  "submission_authorized": true
 }
 ```
 
-这种状态可以训练和预排版，不能把项目标记为正式提交就绪。
+题面、附件、赛中更正、队伍编号和题目专项交付物仍须动态核验；缺少这些内容时不能把项目标记为正式提交就绪。仓库 LaTeX 仅用于内部评阅，正式提交默认使用官方 `.doc`。
 
 ## 安装
 

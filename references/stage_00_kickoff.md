@@ -84,7 +84,7 @@ python <skill>/scripts/init_project.py \
 - 格式四类必须独立展示，不得合并成“格式已确认”。摘要页数与全文页数必须分开；若当届完整文件没有规定某项，只能记录“已检查的官方文件未规定”，不得猜值。
 - 当届规则完整：写入 `basis_year=competition_year`、`basis_status=current_official`、`replacement_required=false`。
 - 当届规则不完整：先向参赛者展示“类别—状态—关键事实—来源—影响”表及阻断阶段，再让其选择“等待当届规则”或“采用可用的往届临时基线”。不得自动启用往届规则。
-- 只有参赛者明确选择华为杯 2025 临时基线时，才加载 `competitions/huawei/provisional_rules.json`，并写入 `competition_year=2026`、`basis_year=2025`、`basis_status=prior_year_provisional`、`replacement_required=true`。
+- 2026 项目加载 `competitions/huawei/official_rules_2026.json` 作为维护者基线，但仍须打开官方来源并把实际访问证据写入项目快照；只有其他目标年份当届文件不完整且参赛者明确批准时，才加载 `provisional_rules.json`。
 
 将规则快照摘要同步到 `decision_log.compliance.ruleset`，然后运行：
 
@@ -165,7 +165,7 @@ pip install -r <skill>/templates/shared/requirements.txt
 `state/{decision_log.json,rules_snapshot.json}` 与
 `results/`、`figures/`、`paper_workspace/`。不得在这里再次复制模板或覆盖状态。
 
-确认 `<skill>/templates/latex/huawei/main.tex` 只能用于内部评阅。2025 格式与 AI 规则只能作参赛者明确批准的 provisional 预检；当届官方标准文档发布后必须替换。
+确认 `<skill>/templates/latex/huawei/main.tex` 只能用于内部评阅。2026 官方提交模板是 `.doc`；第三方或仓库 LaTeX 不因外观相似而获得官方地位。
 
 ### Step 4: 题目预扫 (题目公布后,15 min)
 

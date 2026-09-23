@@ -129,6 +129,7 @@ def run_checks(
         "templates/shared/problem_spec.md",
         "templates/shared/question_contract.json",
         "competitions/huawei/provisional_rules.json",
+        "competitions/huawei/official_rules_2026.json",
         "templates/shared/matlab/mm_style.m",
         "templates/shared/matlab/mm_choose_chart.m",
         "templates/shared/matlab/mm_audit_figure.m",
@@ -173,6 +174,7 @@ def run_checks(
         SKILL_ROOT / "templates" / "shared" / "question_contract.json",
         SKILL_ROOT / "templates" / "shared" / "ai_usage_ledger.json",
         SKILL_ROOT / "competitions" / "huawei" / "provisional_rules.json",
+        SKILL_ROOT / "competitions" / "huawei" / "official_rules_2026.json",
     ]
     for comp in COMPETITIONS:
         json_paths.extend((
@@ -309,6 +311,32 @@ def run_checks(
         provisional_ok,
         "2025 Huawei fallback is explicit, sourced, replaceable, and non-submittable"
         if provisional_ok else "Huawei provisional rule profile is unsafe or incomplete",
+    ))
+
+    current_path = SKILL_ROOT / "competitions" / "huawei" / "official_rules_2026.json"
+    current = parsed.get(current_path, {})
+    current_hashes = current.get("official_source_sha256", {}) if isinstance(current, dict) else {}
+    current_ok = (
+        isinstance(current, dict)
+        and current.get("competition") == "huawei"
+        and current.get("competition_year") == 2026
+        and current.get("basis_year") == 2026
+        and current.get("basis_status") == "current_official"
+        and current.get("replacement_required") is False
+        and current.get("submission_authorized") is True
+        and isinstance(current.get("official_sources"), dict)
+        and isinstance(current_hashes, dict)
+        and len(current_hashes) == 4
+        and all(
+            isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
+            for value in current_hashes.values()
+        )
+    )
+    checks.append(_check(
+        "huawei-current-rules-2026",
+        current_ok,
+        "2026 Huawei opening files are current, sourced, and hashed"
+        if current_ok else "Huawei 2026 official rule profile is incomplete",
     ))
 
     comp_dir = SKILL_ROOT / "competitions" / competition

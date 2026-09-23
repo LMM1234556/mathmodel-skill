@@ -113,7 +113,7 @@ Copy `templates/shared/format_audit.md` into `paper_workspace/` and fill one row
 
 Do not treat `unknown` as “not required”. `not_stated` is allowed only after all relevant current-year official documents have been opened and cited. In particular, an abstract page limit is not a total-paper page limit. If the current official documents do not state a total limit, record that exact sourced conclusion instead of inventing a number.
 
-The verified invitation fixes the contest schedule, not the final paper layout. Until the target-year format and AI files are obtained, the verified 2025 rules may guide provisional content organization, anonymity, citations, font/page-number rehearsal, and AI annotations. Record `prior_year_provisional`; do not copy 2025 dates, filename digits, attachment limits, logos, or templates into a current-year submission. The repository LaTeX remains internal-review only.
+For 2026, the opening notice, paper-format file, official `.doc` template, submission manual and AI rules are available. Verify their URLs and hashes in the project snapshot, then add the selected problem and any later corrections. The repository LaTeX remains internal-review only.
 
 Problem-specific deliverables follow the current official prompt and standard document, never another contest's conventions.
 
@@ -129,7 +129,7 @@ Because this skill itself uses an AI agent, keep `decision_log.compliance.ai_usa
 
 Do not invent a Huawei Cup disclosure format. Compare the ledger with the target-year official AI notice and record the manual check. Never place API keys, tokens, private data, or credentials in the ledger.
 
-For a Huawei Cup rehearsal using the 2025 provisional baseline, also check that
+For the 2026 Huawei Cup, check that
 AI-assisted data analysis is annotated next to the result, AI-assisted programs
 carry a header comment with tool/version/provider/release date, model and formula
 sources are independently verified, and the team has recorded any problem-required

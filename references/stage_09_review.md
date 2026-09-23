@@ -30,13 +30,9 @@ Read `references/rule_verification_protocol.md` and `competitions/huawei/current
 
 Minimum Huawei Cup checks:
 
-- when the 2026 format or AI files are unavailable, the 2025 official rules may
-  be used for a rehearsal audit only; record `basis_status=prior_year_provisional`
-  and `replacement_required=true`;
-- the rehearsal may check content order, pagination, fonts, anonymity, citations,
-  AI annotations and code comments, but 2025 dates, filename digits, attachment
-  limit, logos and template are not 2026 requirements;
-- use the 2026 standard document downloaded from the official contest system,
+- use `basis_status=current_official` only after recording the 2026 opening files,
+  selected problem and applicable corrections in the project snapshot;
+- use the 2026 official `.doc` downloaded from the official contest system,
   not `templates/latex/huawei/main.tex`;
 - verify the problem ZIP and final PDF with the official MD5 tool, and preserve
   which exact PDF was locked;
@@ -107,11 +103,20 @@ Map every high-severity concern back to one source section and apply a targeted 
 
 ## 6. Verify Huawei Cup AI-use disclosure
 
-Keep the internal AI-use ledger complete, then map it to the target-year official AI notice. Do not reuse another contest's generated report or invent a mandatory file. If only the 2025 provisional baseline is available, complete a rehearsal check but keep `ai_disclosure_passed=false` and `submission_ready=false` for the target-year submission.
+Keep the internal AI-use ledger complete, then map every use to the 2026 official AI rule: adjacent annotation for AI-assisted data analysis, header comment for AI-assisted code, verifiable sources for models/formulas, and extra input/post-processing details only when the selected problem asks for them. Do not invent a mandatory separate AI report.
+
+Review AI-assisted text for team understanding, independent verification and
+the team's own wording. “Removing AI traces” is not a compliance objective;
+concealing required annotations or retaining unverified generated formulas,
+citations, code or claims is a blocking issue.
+
+Also audit every “innovation/improved/adaptive/hybrid” claim against Stage 7.
+If no formula/code change and fair comparison evidence exist, downgrade it to
+problem-specific adaptation or remove it.
 
 ## 7. Compile and inspect the final PDF
 
-Use `<skill>/scripts/render_paper.py` or the selected LaTeX engine. Compilation succeeds only when the PDF exists, includes all intended sections, and has no unresolved high-severity warnings. Visually inspect the first page, dense equations, wide tables, figure-heavy pages, references, appendices, and the AI report.
+Export the official `.doc` submission source to PDF. `render_paper.py` may render the internal review draft but not the official submission. Inspect every PDF page, especially the official cover, summary, dense equations, wide tables, figures, references, appendices and any AI annotations.
 
 ## 8. Persist the final gate
 

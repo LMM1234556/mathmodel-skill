@@ -1,5 +1,5 @@
 {
-  "_doc": "华为杯内部质量 overlay。不是官方评分表；2025 官方格式/AI 规则只作 provisional 预检，2026 论文规范和题面发布后必须替换。",
+  "_doc": "华为杯内部质量 overlay，不是官方评分表。2026 通用格式和 AI 规则已核验；题面和赛中更正仍须动态确认。",
   "_seed_version": "0.1",
   "competition": "huawei",
   "version": "0.1",
@@ -27,7 +27,7 @@
     "9": {
       "dims": {
         "1_anti_pattern_coverage": {
-          "describe": "对照 Huawei pack 的维护者检查项；2025 provisional 可完成模拟检查，但 2026 官方标准文档和 AI 规则未核对时不能标记提交就绪"
+          "describe": "对照 2026 官方开赛文件、实际题面、赛中更正与 Huawei pack；任何动态要求未核验时不能标记提交就绪"
         },
         "5_pdf_compile_clean": {
           "describe": "最终 PDF 必须来自当届官方标准文档；内部 LaTeX 评阅稿不能作为提交件"
@@ -48,5 +48,5 @@
   "abstract_template_path": "competitions/huawei/abstract_template.md",
   "paper_skeleton_path": "competitions/huawei/paper_skeleton.md",
   "latex_template_dir": "templates/latex/huawei",
-  "citation_format": "2025 规则可作临时预检；正式提交以 2026 当届竞赛论文标准文档为准"
+  "citation_format": "以 2026 当届官方格式规范、模板、AI 规则和实际题面为准"
 }

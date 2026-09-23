@@ -1,6 +1,6 @@
 {
   "name": "mathmodel-skill",
-  "version": "7.1.0",
+  "version": "7.3.0",
   "description": "A Huawei Cup-specific ten-stage workflow with per-question human approval, data isolation, candidate-model comparison, MATLAB figures, paper traceability, and current-rule compliance review.",
   "author": {
     "name": "LMM1234556",

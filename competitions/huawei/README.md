@@ -1,30 +1,30 @@
 # Huawei Cup competition pack
 
-This pack targets the “华为杯”中国研究生数学建模竞赛, not the 电工杯.
+This pack targets the “华为杯” China Postgraduate Mathematical Contest in
+Modeling only.
 
-Status on 2026-09-15:
+Status on 2026-09-23:
 
-- the official invitation and schedule are verified in `current_rules.md`;
-- the 2026 paper standard, AI rules, and problems are not yet available in the
-  checked official notice list;
-- the official 2025 paper-format and AI-use rules are recorded as a provisional
-  rehearsal baseline only; they never make a 2026 artifact submission-ready;
-- format verification is split into official template/cover,
-  typography/paragraphs, pagination/page limits, and appendix/supporting
-  materials; the checked 2025 documents state an abstract limit but no total
-  paper page limit;
-- `provisional_rules.json` is the machine-readable fallback profile and keeps
-  `submission_authorized=false` until replaced by the current-year documents;
-- `empirical.json` has `n=0`; writing and review material is maintainer guidance,
-  not an award predictor;
-- the LaTeX file is an internal review template only. Final submission must use
-  the official standard document released for the contest.
+- invitation, opening notice, submission manual, paper-format specification,
+  official `.doc` template, AI-use rules and the 9/21 reminder are verified;
+- `official_rules_2026.json` records the current machine-readable baseline and
+  hashes of the four downloadable opening attachments;
+- the problem package, problem-specific deliverables, corrections, official
+  forum answers, team number and observed submission state remain dynamic;
+- `provisional_rules.json` is retained only as an auditable prior-year fallback,
+  not as the active 2026 profile;
+- format verification remains split into cover/template, typography/paragraphs,
+  pagination/page limits, anonymity, appendix/supporting materials and files;
+- the official sources state an abstract limit but no total-paper page limit;
+- `empirical.json` remains `n=0`; the local paper collection lacks reliable
+  award labels/provenance for statistical calibration;
+- repository and third-party LaTeX files are internal-review resources. The
+  2026 official submission template is `.doc`.
 
-Update the pack after the official files are published and preserve their URLs,
-dates, and hashes. Do not copy requirements from CUMCM or Diangong merely because
-all three use Chinese papers.
+Official documents override repository guidance, third-party manuals and prior
+papers. Re-open the notice list during the contest because corrections and
+problem-specific requirements can appear after this snapshot.
 
-For a new 2026 workspace, `init_project.py --competition huawei --year 2026`
-must leave the problem ID, subproblem count, rule basis, and official-source list
-empty. Those fields are populated only after the current problem and official
-documents are actually opened; the initializer never enables the 2025 fallback.
+The maintainer's adoption/rejection notes for non-official prompt collections
+and manuals are recorded in `source_material_audit.md`; those materials never
+override official documents or the per-question approval gates.

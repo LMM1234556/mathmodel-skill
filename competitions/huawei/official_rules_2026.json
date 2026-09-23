@@ -1,0 +1,69 @@
+{
+  "_schema_version": "1.0",
+  "_doc": "2026 华为杯官方开赛规则维护者基线；正式项目仍须建立含题目专项要求的 rules_snapshot.json。",
+  "competition": "huawei",
+  "competition_year": 2026,
+  "basis_year": 2026,
+  "basis_status": "current_official",
+  "replacement_required": false,
+  "submission_authorized": true,
+  "verified_at": "2026-09-23",
+  "official_sources": {
+    "invitation": "https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c9080189dcfa24e019dddacc24a1314?page=0",
+    "opening_notice": "https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c90801ca06f016101a0a47e06b77d9b?page=0",
+    "important_reminder": "https://cpipc.acge.org.cn/cw/contestNews/detail/4/2c908017a0c0f0a801a0c30c2ee41707?page=0",
+    "submission_manual": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=1cb884ee3d3f4707a28b2fe0129ec627",
+    "paper_format_spec": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=97a93e3a9e074738aea95eea986508f2",
+    "official_paper_template": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=a730b312331e492baad17b248bad6b51",
+    "ai_use_rules": "https://cpipc.acge.org.cn/sysFile/downFile.do?fileId=4fc024f7a1504abb87fc056440c64a28"
+  },
+  "official_source_sha256": {
+    "submission_manual": "bd3f6c4456f8f57b309a3aace33644e1a9f877883cda64bf7d014c4e9e7adec4",
+    "paper_format_spec": "46d2e2a87e90608ace764203d5326d7c7e41f01a5eb79986724a6f159fd70e16",
+    "official_paper_template": "195b06cf670ec1aeb796bfd07e6d3e98e36d16db119308dcf4d0756319fe2e29",
+    "ai_use_rules": "5922c1f92530c88eab3214e67de981aeda195c27d5b583ddc2380ee24db0e539"
+  },
+  "paper": {
+    "problem_letters": ["A", "B", "C", "D", "E", "F"],
+    "abstract_max_pages": 2,
+    "abstract_limit_wording": "一般不超过两页",
+    "english_abstract_required": false,
+    "total_paper_page_limit": null,
+    "total_paper_page_limit_status": "not_stated_in_reviewed_2026_official_files",
+    "page_numbering": "摘要页为第1页，页脚中部连续阿拉伯数字",
+    "header_allowed": false,
+    "title_font": "三号黑体",
+    "level_1_heading_font": "四号黑体，居中",
+    "chinese_body_font": "小四宋体，单倍行距",
+    "other_paragraph_rules_status": "not_stated; preserve official template settings",
+    "official_cover_required": true,
+    "official_cover_removable": false,
+    "official_cover_logos_replaceable": false,
+    "identity_rule": "除首页外不得出现高校代码、高校名称、队伍号、姓名、学号等身份信息",
+    "pdf_uncompressed": true,
+    "pdf_filename": "题号字母+队伍编号.pdf",
+    "pdf_size_limit_status": "not_stated_in_reviewed_2026_official_files",
+    "in_paper_appendix_rule_status": "not_stated; selected problem may add requirements"
+  },
+  "submission": {
+    "md5_window": "2026-09-26T12:00:00+08:00/2026-09-27T12:00:00+08:00",
+    "pdf_upload_window": "2026-09-27T14:00:00+08:00/2026-09-28T24:00:00+08:00",
+    "support_upload_window": "2026-09-29T08:00:00+08:00/2026-09-30T24:00:00+08:00",
+    "view_window": "2026-09-29T08:00:00+08:00/2026-09-30T12:00:00+08:00",
+    "md5_lock": true,
+    "supporting_material_required": false,
+    "supporting_material_trigger": "题目要求，或团队认为有助评审且已在论文中注明",
+    "support_archive_type": "rar",
+    "support_archive_filename": "题号字母+队伍编号.rar",
+    "support_archive_limit_mb": 50
+  },
+  "ai_use": {
+    "role": "辅助而非主导",
+    "human_language_required": true,
+    "data_analysis_annotation_fields": ["工具名称", "版本或型号", "开发机构或公司", "版本发布日期"],
+    "code_header_annotation_fields": ["工具名称", "版本或型号", "开发机构或公司", "版本发布日期"],
+    "problem_requested_trace_fields": ["输入内容", "输出后处理", "开发框架", "开源软件", "技术路线", "假设条件", "参数与超参数"],
+    "separate_ai_report_mandated": false
+  },
+  "dynamic_items": ["题面与附件", "题目专项交付物", "更正和官方论坛答复", "队伍编号与提交状态"]
+}

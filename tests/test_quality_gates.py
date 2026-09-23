@@ -53,6 +53,15 @@ class QualityGatePackageTests(unittest.TestCase):
         stage2 = (ROOT / "references" / "stage_02_analysis.md").read_text(
             encoding="utf-8"
         )
+        stage3 = (ROOT / "references" / "stage_03_model_selection.md").read_text(
+            encoding="utf-8"
+        )
+        stage5 = (ROOT / "references" / "stage_05_subproblem_loop.md").read_text(
+            encoding="utf-8"
+        )
+        stage7 = (ROOT / "references" / "stage_07_evaluation.md").read_text(
+            encoding="utf-8"
+        )
         stage8 = (ROOT / "references" / "stage_08_writing.md").read_text(
             encoding="utf-8"
         )
@@ -66,6 +75,18 @@ class QualityGatePackageTests(unittest.TestCase):
         self.assertIn("format_audit.md", stage8)
         self.assertIn("format_audit.md", stage9)
         self.assertIn("evidence_traceability_passed", stage9)
+        self.assertIn("分析问题—决策", stage2)
+        self.assertIn("只有优化问题才写目标函数", stage2)
+        self.assertIn("不可补偿的可行性筛查", stage3)
+        self.assertIn("最小数学结构", stage5)
+        self.assertIn("审计创新声明", stage7)
+        self.assertIn("Removing AI traces", stage9)
+
+        source_audit = (
+            ROOT / "competitions" / "huawei" / "source_material_audit.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("mandatory Python implementation path", source_audit)
+        self.assertIn("avoid AI traces", source_audit)
 
         stage0 = (ROOT / "references" / "stage_00_kickoff.md").read_text(
             encoding="utf-8"
@@ -315,6 +336,24 @@ class StateMigrationTests(unittest.TestCase):
 
 
 class HuaweiPackTests(unittest.TestCase):
+    def test_2026_rules_are_current_and_source_hashed(self) -> None:
+        rules = json.loads(
+            (ROOT / "competitions" / "huawei" / "official_rules_2026.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(rules["competition"], "huawei")
+        self.assertEqual(rules["competition_year"], 2026)
+        self.assertEqual(rules["basis_status"], "current_official")
+        self.assertFalse(rules["replacement_required"])
+        self.assertTrue(rules["submission_authorized"])
+        self.assertEqual(len(rules["official_source_sha256"]), 4)
+        self.assertTrue(
+            all(len(value) == 64 for value in rules["official_source_sha256"].values())
+        )
+        self.assertIsNone(rules["paper"]["total_paper_page_limit"])
+        self.assertFalse(rules["ai_use"]["separate_ai_report_mandated"])
+
     def test_prior_year_rules_are_provisional_not_submission_authority(self) -> None:
         rules = json.loads(
             (ROOT / "competitions" / "huawei" / "provisional_rules.json").read_text(

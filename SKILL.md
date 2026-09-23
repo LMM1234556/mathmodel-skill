@@ -3,11 +3,11 @@ name: mathmodel-skill
 description: “华为杯”中国研究生数学建模竞赛专用的端到端协作与质量控制工作流。Use when a user is preparing for or participating in the Huawei Cup China Postgraduate Mathematical Contest in Modeling and needs source-anchored problem interpretation, per-question human approval, default-deny data isolation, comparable model selection, MATLAB figures, paper writing, compliance, or final review. Do not trigger for CUMCM, MCM/ICM, Diangong Cup, generic model selection, ordinary data analysis, or non-competition paper review.
 ---
 
-# mathmodel-skill — 华为杯数学建模工作流 (v7.1)
+# mathmodel-skill — 华为杯数学建模工作流 (v7.3)
 
 10 阶段把华为杯约 100 小时的竞赛协作变成可恢复、可检查的流程。用户回答关键问题，agent 维护状态与脚本。流程重点控制三类高风险错误：题意误读、跨题串用数据、模型与图表未经参赛者确认。Stage 8–9 必须重新核验当届官方规则；仓库没有获奖概率模型，华为杯经验统计为 `n=0`。
 
-**v7.1 范围**：当前发行版只支持华为杯。其他赛事资料若仍存在于仓库，只是未来扩展的非活动历史资源，不得加载、不得作为当前规则来源，也不属于本版本的质量承诺。
+**v7.3 范围**：当前发行版只支持华为杯。其他赛事资料若仍存在于仓库，只是未来扩展的非活动历史资源，不得加载、不得作为当前规则来源，也不属于本版本的质量承诺。
 
 ---
 
@@ -27,7 +27,7 @@ Codex 优先按 skill 目录发现本文件:
 
 ## Harness 兼容 (Claude Code / Codex)
 
-本 skill v7.1 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
+本 skill v7.3 以 Codex Skills 为一等入口, 同时保持 harness-agnostic 设计:
 
 | harness | 入口文件 | 用户交互工具 | 状态文件 |
 |---------|---------|-------------|---------|
@@ -97,7 +97,7 @@ Codex 优先按 skill 目录发现本文件:
 
 ## 华为杯 × 三模式
 
-华为杯当前按 100 小时中文竞赛准备。2026 邀请函已经核验；若当届论文标准或 AI 规则仍不可用，2025 文件只能作为显式 `prior_year_provisional` 演练基线，内部 LaTeX 不能作为提交件。反馈深度由 mode 决定。
+华为杯当前按 100 小时中文竞赛准备。2026 开赛公告、论文格式、官方 `.doc` 模板、提交手册和 AI 规则已核验；题面、附件、赛中更正与专项交付物仍须从实际题目包和官方通知动态确认。内部 LaTeX 不能作为提交件。反馈深度由 mode 决定。
 
 | Mode | 上下文策略 | 反馈层 | 用途 |
 |---|---|---|---|
@@ -143,7 +143,7 @@ Codex 优先按 skill 目录发现本文件:
 - **stage 3, 5**: `references/question_contract_protocol.md` + `references/model_catalog.md`；Stage 3 运行 `audit_question_contracts.py --phase plan`，Stage 5 求解前运行 `--phase execute --question <Qi>`，完成后运行 `--phase final --question <Qi>`
 - **stage 5 / 8 / 9**: `references/visualization_protocol.md`; 所有定量图必须由 MATLAB 生成，复制 `templates/shared/matlab/` 使用 `mm_choose_chart`、`mm_style` 与 `mm_export_figure`
 - **stage 5**: per-Qi 评分跑完后调 `scripts/score_artifact.py --mode aggregate_qi` 聚合
-- **stage 0 / 8 / 9**: 读取 `references/rule_verification_protocol.md`，核对 `competitions/huawei/current_rules.md` 中的官方链接，维护 `state/rules_snapshot.json`；格式必须分别核对官方模板/封面、字体/段落、分页/页数、附录/支撑材料，不接受笼统的“格式已检查”；依次运行 `audit_ruleset.py --phase kickoff|writing|final`
+- **stage 0 / 8 / 9**: 读取 `references/rule_verification_protocol.md`，核对 `competitions/huawei/current_rules.md` 与 `official_rules_2026.json` 中的官方链接，维护 `state/rules_snapshot.json`；格式必须分别核对官方模板/封面、字体/段落、分页/页数、附录/支撑材料，不接受笼统的“格式已检查”；依次运行 `audit_ruleset.py --phase kickoff|writing|final`
 - **stage 8**: `competitions/huawei/{winning_patterns,phrase_bank,abstract_template,paper_skeleton}.md`
 - **stage 8 / 9**: `references/paper_quality_protocol.md` + `templates/shared/format_audit.md`，维护 Claim IDs、证据矩阵、反向提纲与逐项格式审计表
 - **stage 8 经验锚点**: `competitions/huawei/empirical.json` 为 `n=0`，不得输出论文分位、获奖概率或伪经验阈值
@@ -217,7 +217,7 @@ L2 跨阶段回检 (stage 5/6/8 末尾) 读这个文件主动找冲突, 触发**
 ## 用户指令快捷
 
 - "进入 stage N" / "重做 stage N" → 跳转
-- “切到其他比赛” → 说明 v7.1 仅支持华为杯并停止；不得改写已有项目的 competition
+- “切到其他比赛” → 说明 v7.3 仅支持华为杯并停止；不得改写已有项目的 competition
 - "升级到 championship" → 启用 L3 + L4 + red-team
 - "切到 fast" → 关闭迭代
 - "回退到 stage M" → 读 decision_log, 回退 current_stage 并清理 ≥M 节点
@@ -228,7 +228,7 @@ L2 跨阶段回检 (stage 5/6/8 末尾) 读这个文件主动找冲突, 触发**
 
 ## 数据来源声明
 
-- `competitions/huawei/`: 2026 邀请函与官方通知列表已于 2026-09-14 核对；2025 官方格式与 AI 规则可作显式临时基线，但当届文件发布后必须替换，内部模板不得作为提交件，empirical 为 `n=0`
+- `competitions/huawei/`: 2026 开赛公告、论文格式、官方 `.doc` 模板、提交手册与 AI 规则已于 2026-09-23 核对；题面与赛中更正仍须动态确认。第三方 LaTeX 和本仓库内部模板不得作为官方提交模板，empirical 为 `n=0`
 - 通用模型清单 `references/model_catalog.md` 跨竞赛复用
 
 ---

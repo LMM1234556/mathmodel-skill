@@ -55,6 +55,24 @@ assumptions and rejected alternative. Pie/donut, radar, dual-axis, 3-D, Sankey,
 and chord diagrams require an explicit analytical reason; visual novelty is not
 a reason.
 
+## Semantic safeguards for specialized figures
+
+- Radar charts are allowed only after all indicators are put on a comparable,
+  direction-consistent scale. Never interpret polygon area as a quantitative
+  overall score.
+- Correlation heatmaps use a fixed `[-1, 1]` scale with zero as the diverging
+  midpoint. Correlation networks must disclose edge threshold, multiple-testing
+  control when inference is claimed, and cannot be described as causal.
+- Prediction figures use the same held-out observations across models. Pair the
+  observed-versus-predicted view with residual/calibration evidence; never draw
+  an interval that was not computed.
+- SHAP values and raw features must join by stable sample ID. Record output units,
+  baseline, and an additivity check. SHAP, PDP, GAM response curves, feature
+  importance, and partial correlation are model descriptions, not causal effects.
+- Spatial figures must declare geometry type, coordinate reference system,
+  spatial support and interpolation method. Do not interpolate discrete classes
+  or imply coverage outside the observed/support domain.
+
 ## Color policy: vivid, controlled, and printable
 
 - Use `mm_style` and its vivid colorblind-aware palette. Saturated colors are
